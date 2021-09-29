@@ -400,6 +400,17 @@ void elf_run(uintptr_t entry_address, char *filename, int argc, char **argv, cha
         d_aux->a_un.a_val = auxv->at_entry;
         break;  
 
+      case AT_L1I_CACHESIZE:
+      case AT_L1I_CACHEGEOMETRY:
+      case AT_L1D_CACHESIZE:
+      case AT_L1D_CACHEGEOMETRY:
+      case AT_L2_CACHESIZE:
+      case AT_L2_CACHEGEOMETRY:
+      case AT_L3_CACHESIZE:
+      case AT_L3_CACHEGEOMETRY:
+        printf("Unhandled auxv entry type: " auxv_type "\n", s_aux->a_type);
+        break;
+
       default:
         #ifdef __arm__
           #define auxv_type "%d"
