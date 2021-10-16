@@ -37,6 +37,44 @@
 
 #ifdef PLUGINS_NEW
 
+#ifdef __riscv
+mambo_branch_type __get_riscv_branch_type(mambo_context *ctx) {
+  mambo_branch_type type = BRANCH_NONE;
+  switch (ctx->code.inst) {
+    case RISCV_BEQ:
+    case RISCV_BNE:
+    case RISCV_BLT:
+    case RISCV_BGE:
+    case RISCV_BLTU:
+    case RISCV_BGEU:
+    case RISCV_C_BEQZ:
+    case RISCV_C_BNEZ:
+      type = BRANCH_DIRECT | RISCV_BRANCH | BRANCH_COND;
+      break;
+
+    case RISCV_C_J:
+      type = BRANCH_DIRECT | RISCV_JUMP;
+      break;
+
+    case RISCV_C_JAL:
+    case RISCV_JAL:
+      type = BRANCH_DIRECT | RISCV_JUMP | BRANCH_CALL;
+      break;
+
+    case RISCV_C_JR:
+      type = BRANCH_INDIRECT | RISCV_JUMP;
+      break;
+
+    case RISCV_JALR:
+    case RISCV_C_JALR:
+      type = BRANCH_INDIRECT | RISCV_JUMP | BRANCH_CALL;
+      break;
+
+  }
+  return type;
+}
+#endif //riscv
+
 #ifdef __arm__
 mambo_branch_type __get_thumb_branch_type(mambo_context *ctx) {
   mambo_branch_type type = BRANCH_NONE;
@@ -221,6 +259,19 @@ mambo_branch_type mambo_get_branch_type(mambo_context *ctx) {
     type = __get_arm_branch_type(ctx);
   }
 #endif
+
+#ifdef __riscv
+   type = __get_riscv_branch_type(ctx);
+#endif
+
+// #ifdef __riscv
+//   type = BRANCH_NONE;
+
+//   switch (ctx->code.inst) {
+//     case 
+//   }
+// #endif
+
 #ifdef __aarch64__
   type = BRANCH_NONE;
 

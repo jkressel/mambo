@@ -408,7 +408,7 @@ void elf_run(uintptr_t entry_address, char *filename, int argc, char **argv, cha
       case AT_L2_CACHEGEOMETRY:
       case AT_L3_CACHESIZE:
       case AT_L3_CACHEGEOMETRY:
-        printf("Unhandled auxv entry type\n");
+        debug("Unhandled auxv entry type\n");
         break;
 
       default:
