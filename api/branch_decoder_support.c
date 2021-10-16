@@ -66,8 +66,24 @@ mambo_branch_type __get_riscv_branch_type(mambo_context *ctx) {
       break;
 
     case RISCV_JALR:
+      unsigned int rd, rs1, imm;
+      type = BRANCH_INDIRECT | RISCV_JUMP;
+
+      riscv_jalr_decode_fields(ctx->code.read_address, &rd, &rs1, &imm);
+      if (rd == ra)
+        type |= BRANCH_RETURN;
+      else 
+        type |= BRANCH_CALL;
+
+
     case RISCV_C_JALR:
-      type = BRANCH_INDIRECT | RISCV_JUMP | BRANCH_CALL;
+      unsigned int rs1;
+      type = BRANCH_INDIRECT | RISCV_JUMP;
+      riscv_c_jalr_decode_fields(ctx->code.read_address, &rs1);
+      if (rd == ra)
+        type |= BRANCH_RETURN;
+      else 
+        type |= BRANCH_CALL;
       break;
 
   }
