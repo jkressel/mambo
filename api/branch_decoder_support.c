@@ -34,6 +34,10 @@
   #include "../pie/pie-a64-decoder.h"
   #include "../pie/pie-a64-field-decoder.h"
 #endif
+#ifdef __riscv
+  #include "../pie/pie-riscv-decoder.h"
+  #include "../pie/pie-riscv-field-decoder.h"
+#endif
 
 #ifdef PLUGINS_NEW
 
@@ -65,27 +69,27 @@ mambo_branch_type __get_riscv_branch_type(mambo_context *ctx) {
       type = BRANCH_INDIRECT | RISCV_JUMP;
       break;
 
-    case RISCV_JALR:
-      unsigned int rd, rs1, imm;
+    case RISCV_JALR: {
       type = BRANCH_INDIRECT | RISCV_JUMP;
+      unsigned int rd, rs1, imm;
 
       riscv_jalr_decode_fields(ctx->code.read_address, &rd, &rs1, &imm);
       if (rd == ra)
         type |= BRANCH_RETURN;
       else 
         type |= BRANCH_CALL;
-
-
-    case RISCV_C_JALR:
+      break;
+    }
+    case RISCV_C_JALR: {
+    type = BRANCH_INDIRECT | RISCV_JUMP;
       unsigned int rs1;
-      type = BRANCH_INDIRECT | RISCV_JUMP;
       riscv_c_jalr_decode_fields(ctx->code.read_address, &rs1);
-      if (rd == ra)
+      if (rs1 == ra)
         type |= BRANCH_RETURN;
       else 
         type |= BRANCH_CALL;
       break;
-
+    }
   }
   return type;
 }
@@ -265,32 +269,9 @@ mambo_branch_type __get_arm_branch_type(mambo_context *ctx) {
 }
 #endif // __arm__
 
-mambo_branch_type mambo_get_branch_type(mambo_context *ctx) {
-  mambo_branch_type type;
-
-#ifdef __arm__
-  if (mambo_get_inst_type(ctx) == THUMB_INST) {
-   type = __get_thumb_branch_type(ctx);
-  } else { // ARM
-    type = __get_arm_branch_type(ctx);
-  }
-#endif
-
-#ifdef __riscv
-   type = __get_riscv_branch_type(ctx);
-#endif
-
-// #ifdef __riscv
-//   type = BRANCH_NONE;
-
-//   switch (ctx->code.inst) {
-//     case 
-//   }
-// #endif
-
-#ifdef __aarch64__
-  type = BRANCH_NONE;
-
+#ifdef __aarch64
+mambo_branch_type __get_aarch64_branch_type(mambo_context *ctx) {
+  mambo_branch_type type = BRANCH_NONE;
   switch (ctx->code.inst) {
     case A64_CBZ_CBNZ:
       type = BRANCH_DIRECT | BRANCH_COND | BRANCH_COND_CBZ;
@@ -321,6 +302,26 @@ mambo_branch_type mambo_get_branch_type(mambo_context *ctx) {
       break;
     }
   }
+}
+#endif
+
+mambo_branch_type mambo_get_branch_type(mambo_context *ctx) {
+  mambo_branch_type type;
+
+#ifdef __arm__
+  if (mambo_get_inst_type(ctx) == THUMB_INST) {
+   type = __get_thumb_branch_type(ctx);
+  } else { // ARM
+    type = __get_arm_branch_type(ctx);
+  }
+#endif
+
+#ifdef __riscv
+   type = __get_riscv_branch_type(ctx);
+#endif
+
+#ifdef __aarch64__
+  type = __get_aarch64_branch_type(ctx);
 #endif // __aarch64__
 
   return type;

@@ -285,7 +285,12 @@ void emit_set_reg(mambo_context *ctx, enum reg reg, uintptr_t value) {
 }
 
 int __emit_branch_cond(inst_set inst_type, void *write, uintptr_t target, mambo_cond cond, bool link) {
-  intptr_t diff = (target & (~THUMB)) - (uintptr_t)write;
+  uintptr_t diff;
+  #ifdef __arm__
+    diff = (target & (~THUMB)) - (uintptr_t)write;
+  #elif __riscv
+    diff = target - (uintptr_t)write;
+  #endif
   if (cond != AL && link) return -1;
 #ifdef __arm__
   switch (inst_type) {
