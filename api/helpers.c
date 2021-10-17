@@ -244,6 +244,18 @@ int emit_a64_add_sub_ext(mambo_context *ctx, int rd, int rn, int rm, int ext_opt
 }
 #endif
 
+#ifdef __riscv
+  void emit_riscv_push(mambo_context *ctx, uint32_t regs) {
+    int reg_no = count_bits(regs);
+    ctx->code.plugin_pushed_reg_count += reg_no;
+
+    uint16_t *write_p = ctx->code.write_p;
+    riscv_push(&write_p, regs);
+
+    ctx->code.write_p = write_p;
+  }
+#endif
+
 void emit_push(mambo_context *ctx, uint32_t regs) {
 #ifdef __arm__
   inst_set isa = mambo_get_inst_type(ctx);
@@ -254,6 +266,8 @@ void emit_push(mambo_context *ctx, uint32_t regs) {
   }
 #elif __aarch64__
   emit_a64_push(ctx, regs);
+#elif __riscv
+  emit_riscv_push(ctx, regs);
 #endif
 }
 
