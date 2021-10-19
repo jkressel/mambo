@@ -33,6 +33,8 @@ typedef struct {
   #define MAX_FCALL_ARGS 4
 #elif __aarch64__
   #define MAX_FCALL_ARGS 8
+#elif __riscv
+  #define MAX_FCALL_ARGS 8
 #endif
 
 void emit_counter64_incr(mambo_context *ctx, void *counter, unsigned incr);

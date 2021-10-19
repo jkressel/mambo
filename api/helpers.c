@@ -254,6 +254,15 @@ int emit_a64_add_sub_ext(mambo_context *ctx, int rd, int rn, int rm, int ext_opt
 
     ctx->code.write_p = write_p;
   }
+
+  void emit_riscv_pop(mambo_context *ctx, uint32_t regs) {
+    ctx->code.plugin_pushed_reg_count -= count_bits(regs);
+    assert(ctx->code.plugin_pushed_reg_count >= 0);
+
+    uint16_t *write_p = ctx->code.write_p;
+    riscv_pop(&write_p, regs);
+    ctx->code.write_p = write_p;
+  }
 #endif
 
 void emit_push(mambo_context *ctx, uint32_t regs) {
@@ -282,6 +291,8 @@ void emit_pop(mambo_context *ctx, uint32_t regs) {
   }
 #elif __aarch64__
   emit_a64_pop(ctx, regs);
+#elif __riscv
+  emit_riscv_pop(ctx, regs);
 #endif
 }
 
@@ -295,6 +306,8 @@ void emit_set_reg(mambo_context *ctx, enum reg reg, uintptr_t value) {
   }
 #elif __aarch64__
   a64_copy_to_reg_64bits((uint32_t **)&ctx->code.write_p, reg, value);
+#elif __riscv
+  riscv_copy_to_reg((uint16_t **)&ctx->code.write_p, reg, value);
 #endif
 }
 
@@ -342,6 +355,12 @@ int __emit_branch_cond(inst_set inst_type, void *write, uintptr_t target, mambo_
     a64_b_cond_helper(write, target, cond);
   }
 #endif
+#ifdef __riscv
+  if (cond == AL) {
+    if (diff < -1048576 || diff > 1048574) return -1;
+    riscv_jal_helper(write, target, ra);
+  }
+#endif
   return 0;
 }
 
@@ -349,8 +368,11 @@ void emit_fcall(mambo_context *ctx, void *function_ptr) {
   // First try an immediate call, and if that is out of range then generate an indirect call
   int ret = __emit_branch_cond(ctx->code.inst_type, ctx->code.write_p, (uintptr_t)function_ptr, AL, true);
   if (ret == 0) return;
-
-  emit_set_reg(ctx, lr, (uintptr_t)function_ptr);
+  #ifdef __riscv
+    emit_set_reg(ctx, ra, (uintptr_t)function_ptr);
+  #else
+    emit_set_reg(ctx, lr, (uintptr_t)function_ptr);
+  #endif
 #ifdef __arm__
   inst_set type = mambo_get_inst_type(ctx);
   if (type == ARM_INST) {
@@ -364,11 +386,17 @@ void emit_fcall(mambo_context *ctx, void *function_ptr) {
 }
 
 int emit_safe_fcall(mambo_context *ctx, void *function_ptr, int argno) {
+#ifdef __riscv
+  uintptr_t to_push = (1 << ra);
+#else
   uintptr_t to_push = (1 << lr);
+#endif
 #ifdef __arm__
   to_push |= (1 << r0) | (1 << r1) | (1 << r2) | (1 << r3) | (1 << r4);
 #elif __aarch64__
   to_push |= 0x1FF;
+#elif __riscv
+  to_push |= 0x3FC00;
 #endif
 
   if (argno > MAX_FCALL_ARGS) return -1;
@@ -678,7 +706,7 @@ int emit_indirect_branch_by_spc(mambo_context *ctx, enum reg reg) {
 #ifdef __aarch64__
   // Uses fragment id 0 to prevent the dispatcher from attempting linking on an IHL miss
   a64_inline_hash_lookup(current_thread, 0, (uint32_t **)&ctx->code.write_p, ctx->code.read_address, reg, false, false);
-#else
+#elif __arm__
   switch(ctx->code.inst_type) {
     case ARM_INST:
       emit_push(ctx, (1 << r4) | (1 << 5) | (1 << 6));
