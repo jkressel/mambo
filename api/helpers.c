@@ -31,7 +31,6 @@
 #include "../api/emit_a64.h"
 #elif __riscv
 #include "../pie/pie-riscv-encoder.h"
-#include "../api/emit_riscv.c"
 #endif
 
 #define not_implemented() \
@@ -477,7 +476,6 @@ void emit_mov(mambo_context *ctx, enum reg rd, enum reg rn) {
 #define SHIFTED_ADD_SUB_MAX (SHIFTED_ADD_SUB_I_MASK | (SHIFTED_ADD_SUB_I_MASK << SHIFTED_ADD_SUB_I_BITS))
 #endif
 
-#if defined __arm__ || defined __aarch64__
 int emit_add_sub_i(mambo_context *ctx, int rd, int rn, int offset) {
   if (offset == 0) {
     if (rd != rn) {
@@ -485,7 +483,7 @@ int emit_add_sub_i(mambo_context *ctx, int rd, int rn, int offset) {
       return 0;
     }
   } else {
-#ifdef __arm__
+#if defined __arm__
     inst_set isa = mambo_get_inst_type(ctx);
     if (isa == THUMB_INST) {
       if (offset > 0xFFF || offset < -0xFFF) return -1;
@@ -498,7 +496,7 @@ int emit_add_sub_i(mambo_context *ctx, int rd, int rn, int offset) {
       }
       return 0;
     }
-#endif
+#elif defined __aarch64__ || defined __arm__
     if (offset < -SHIFTED_ADD_SUB_MAX || offset > SHIFTED_ADD_SUB_MAX) return -1;
 
     if (offset < 0) {
@@ -519,7 +517,10 @@ int emit_add_sub_i(mambo_context *ctx, int rd, int rn, int offset) {
         _emit_add_shift_imm(rd, rn, offset >> SHIFTED_ADD_SUB_I_BITS, SHIFTED_ADD_SUB_I_BITS);
       }
     }
-  } // offset != 0
+    #elif  defined __riscv
+    emit_riscv_addi(ctx, rd, rn, offset);
+  }
+  #endif
   return 0;
 }
 
@@ -540,7 +541,6 @@ inline int emit_add_sub(mambo_context *ctx, int rd, int rn, int rm) {
   return emit_add_sub_shift(ctx, rd, rn, rm, LSL, 0);
 }
 
-#endif
 
 int emit_branch_cond(mambo_context *ctx, void *target, mambo_cond cond) {
   void *write_p = mambo_get_cc_addr(ctx);
