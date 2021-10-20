@@ -468,6 +468,7 @@ void copy_to_reg_32bit(uint16_t **write_p, enum reg reg, uint32_t value);
 #ifdef __riscv
 void riscv_push(uint16_t **o_write_p, uint32_t regs);
 void riscv_pop(uint16_t **o_write_p, uint32_t regs);
+void riscv_copy_to_reg(uint16_t **write_p, const enum reg reg, uintptr_t const value);
 #endif
 
 void init_plugin();

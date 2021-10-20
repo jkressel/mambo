@@ -119,6 +119,8 @@ int mambo_register_function_cb(mambo_context *ctx, char *fn_name,
   #define ARG_LIMIT 4
 #elif __aarch64__
   #define ARG_LIMIT 8
+#elif __riscv
+  #define ARG_LIMIT 8
 #endif
   if (cb_pre == NULL && cb_post == NULL) return -1;
   if (cb_post && (max_args > ARG_LIMIT || max_args < 0)) return -2;
@@ -401,9 +403,11 @@ int mambo_add_identity_mapping(mambo_context *ctx) {
   }
 
   uintptr_t addr = (uintptr_t)mambo_get_cc_addr(ctx);
+  #ifdef __arm__
   if (ctx->code.inst_type == THUMB_INST) {
     addr |= THUMB;
   }
+  #endif
 
   int ret = hash_add(&current_thread->entry_address, addr, addr);
   return (ret) ? 0 : -1;

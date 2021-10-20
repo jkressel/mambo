@@ -29,6 +29,9 @@
 #elif __aarch64__
 #include "../pie/pie-a64-encoder.h"
 #include "../api/emit_a64.h"
+#elif __riscv
+#include "../pie/pie-riscv-encoder.h"
+#include "../api/emit_riscv.c"
 #endif
 
 #define not_implemented() \
@@ -469,9 +472,12 @@ void emit_mov(mambo_context *ctx, enum reg rd, enum reg rn) {
            assert((shift) == 0 || (shift) == 12); \
            emit_a64_ADD_SUB_immed(ctx, 1, 1, 0, (shift == 12), (offset), (rn), (rd));
 #endif
+#if defined __arm__ || defined __aarch64__
 #define SHIFTED_ADD_SUB_I_MASK ((1 << SHIFTED_ADD_SUB_I_BITS) - 1)
 #define SHIFTED_ADD_SUB_MAX (SHIFTED_ADD_SUB_I_MASK | (SHIFTED_ADD_SUB_I_MASK << SHIFTED_ADD_SUB_I_BITS))
+#endif
 
+#if defined __arm__ || defined __aarch64__
 int emit_add_sub_i(mambo_context *ctx, int rd, int rn, int offset) {
   if (offset == 0) {
     if (rd != rn) {
@@ -533,6 +539,8 @@ inline int emit_add_sub_shift(mambo_context *ctx, int rd, int rn, int rm,
 inline int emit_add_sub(mambo_context *ctx, int rd, int rn, int rm) {
   return emit_add_sub_shift(ctx, rd, rn, rm, LSL, 0);
 }
+
+#endif
 
 int emit_branch_cond(mambo_context *ctx, void *target, mambo_cond cond) {
   void *write_p = mambo_get_cc_addr(ctx);
@@ -699,6 +707,22 @@ void emit_counter64_incr(mambo_context *ctx, void *counter, unsigned incr) {
   emit_a64_ADD_SUB_immed(ctx, 1, 0, 0, 0, incr, x1, x1);
   emit_a64_LDR_STR_unsigned_immed(ctx, 3, 0, 0, 0, x0, x1);
   emit_a64_pop(ctx, (1 << x0) | (1 << x1));
+#endif
+
+#ifdef __riscv
+  #if __riscv_xlen == 32
+    #error increment 64 not implemented on 32 bit yet
+  #elif __riscv_xlen == 64
+    assert(incr <= 0xFFF);
+    emit_riscv_push(ctx, (1 << x6 | (1 << x7)));
+    riscv_copy_to_reg((uint16_t **)&ctx->code.write_p, x6, (uintptr_t)counter);
+    emit_riscv_ld(ctx, x7, x6, 0);
+    emit_riscv_addi(ctx, x7, x7, incr);
+    emit_riscv_sd(ctx, x7, x6, 0, 0);
+    emit_riscv_pop(ctx, (1 << x6 | (1 << x7)));
+  #else
+    #error increment 64 not implemented
+  #endif
 #endif
 }
 
