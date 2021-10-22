@@ -1,4 +1,4 @@
-#PLUGINS+=plugins/branch_count.c
+PLUGINS+=plugins/branch_count.c
 #PLUGINS+=plugins/soft_div.c
 #PLUGINS+=plugins/tb_count.c
 #PLUGINS+=plugins/mtrace.c plugins/mtrace.S
@@ -8,6 +8,8 @@
 #PLUGINS+=plugins/strace.c
 #PLUGINS+=plugins/symbol_example.c
 #PLUGINS+=plugins/memcheck/memcheck.S plugins/memcheck/memcheck.c plugins/memcheck/naive_stdlib.c
+PLUGINS+=plugins/cnd_branch_print.c
+PLUGINS+=plugins/uncnd_branch_print.c
 
 OPTS= -DDBM_LINK_UNCOND_IMM
 OPTS+=-DDBM_INLINE_UNCOND_IMM
@@ -20,7 +22,7 @@ OPTS+=-DDBM_INLINE_HASH
 #OPTS+=-DDBM_TRACES #-DTB_AS_TRACE_HEAD #-DBLXI_AS_TRACE_HEAD
 #OPTS+=-DCC_HUGETLB -DMETADATA_HUGETLB
 
-CFLAGS+=-D_GNU_SOURCE -g -std=gnu99 -O2
+CFLAGS+=-D_GNU_SOURCE -g -std=gnu99 -O0
 CFLAGS+=-DGIT_VERSION=\"$(shell git describe --abbrev=8 --dirty --always)\"
 
 LDFLAGS+=-static -ldl

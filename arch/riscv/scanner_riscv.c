@@ -977,6 +977,8 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
       riscv_check_free_space(thread_data, &write_p, &data_p, MIN_FSPACE, basic_block);
     }
 
+    riscv_scanner_deliver_callbacks(thread_data, POST_INST_C, &read_address, inst, &write_p, &data_p, basic_block, type, !stop, &stop);
+
     if (inst < RISCV_LUI) {
       read_address++;
     } else {
