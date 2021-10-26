@@ -263,7 +263,15 @@ retry:
   CBNZ W3, atomic_increment_u64
   MOV X0, X2
   RET
-
+#elif __riscv
+  #ifdef __riscv_atomic
+    sd a2, 0(sp)
+    addi sp, sp, 8
+    amoadd.d a2, a1, (a0)
+    addi sp, sp, -8
+    ld a2, 0(sp)
+    jr ra
+  #endif
 #endif
 .endfunc
 

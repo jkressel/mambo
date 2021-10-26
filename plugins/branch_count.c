@@ -55,12 +55,12 @@ int branch_count_post_thread_handler(mambo_context *ctx) {
 
   fprintf(stderr, "Thread: %d\n", mambo_get_thread_id(ctx));
   print_counters(counters);
-  // atomic_increment_u64(&global_counters.direct_branch_count,
-  //                      counters->direct_branch_count);
-  // atomic_increment_u64(&global_counters.indirect_branch_count,
-  //                      counters->indirect_branch_count);
-  // atomic_increment_u64(&global_counters.return_branch_count,
-  //                      counters->return_branch_count);
+  atomic_increment_u64(&global_counters.direct_branch_count,
+                       counters->direct_branch_count);
+  atomic_increment_u64(&global_counters.indirect_branch_count,
+                       counters->indirect_branch_count);
+  atomic_increment_u64(&global_counters.return_branch_count,
+                       counters->return_branch_count);
   mambo_free(ctx, counters);
 }
 
