@@ -383,6 +383,12 @@ int riscv_jal_helper(uint16_t **o_write_p, uintptr_t target, enum reg rd) {
   return 0;
 }
 
+void riscv_cc_jump(dbm_thread *thread_data, uint16_t *write_p, uintptr_t target) {
+  int ret = riscv_jal_helper(&write_p, target, x0);
+  assert(ret == 0);
+  record_cc_link(thread_data, (uintptr_t)write_p, target);
+}
+
 void riscv_go_to_dispatcher(dbm_thread *thread_data, uint16_t **o_write_p) {
   int ret = riscv_jalr_helper(o_write_p, thread_data->dispatcher_addr, zero, s1);
   assert(ret == 0);

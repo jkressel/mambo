@@ -96,6 +96,7 @@ int riscv_branch_helper(uint16_t **o_write_p, uintptr_t target, int const rs1,
                         int const rs2, enum branch_condition const condition);
 int riscv_jalr_helper(uint16_t **o_write_p, uintptr_t target, enum reg rd, enum reg rs1);
 int riscv_jal_helper(uint16_t **o_write_p, uintptr_t target, enum reg rd);
+void riscv_cc_jump(dbm_thread *thread_data, uint16_t *write_p, uintptr_t target);
 #endif
 
 extern void inline_hash_lookup();
