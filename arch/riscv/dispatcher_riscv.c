@@ -145,8 +145,17 @@ void dispatcher_riscv(dbm_thread *thread_data, uint32_t source_index, branch_typ
 #ifdef DBM_LINK_UNCOND_IMM
     case jal_riscv:
       uint16_t *branch_addr = thread_data->code_cache_meta[source_index].exit_branch_addr;
-      riscv_cc_jump(thread_data, branch_addr, block_address+6);
-      __clear_cache((void *)branch_addr, (void *)branch_addr + 112);
+      intptr_t offset = (block_address+6) - (intptr_t)branch_addr;
+      if (abs(offset) <= 0xFFFFF) {
+        riscv_cc_jump(thread_data, branch_addr, block_address+6);
+        __clear_cache((void *)branch_addr, (void *)branch_addr+2);
+      } else {
+        riscv_push(&branch_addr, (1 << a0) | (1 << a1));
+        int ret = riscv_jalr_helper(&branch_addr, block_address, zero, a0);
+        assert(ret == 0);
+        record_cc_link(thread_data, (uintptr_t)branch_addr, block_address);
+        __clear_cache((void *)branch_addr, (void *)branch_addr+8);
+      }
       thread_data->code_cache_meta[source_index].branch_cache_status = BRANCH_LINKED;
       break;
 #endif
