@@ -3,7 +3,7 @@
       https://github.com/beehive-lab/mambo
 
   Copyright 2020 Guillermo Callaghan <guillermocallaghan at hotmail dot com>
-  Copyright 2020 The University of Manchester
+  Copyright 2021 The University of Manchester
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ void dispatcher_riscv(dbm_thread *thread_data, uint32_t source_index, branch_typ
         int ret = riscv_jalr_helper(&branch_addr, block_address, zero, a0);
         assert(ret == 0);
         record_cc_link(thread_data, (uintptr_t)branch_addr, block_address);
-        __clear_cache((void *)branch_addr, (void *)branch_addr+8);
+        __clear_cache((void *)branch_addr, (void *)branch_addr+24);
       }
       thread_data->code_cache_meta[source_index].branch_cache_status = BRANCH_LINKED;
       break;
