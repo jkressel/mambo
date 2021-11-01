@@ -2,15 +2,12 @@
   This file is part of MAMBO, a low-overhead dynamic binary modification tool:
       https://github.com/beehive-lab/mambo
 
-  Copyright 2013-2016 Cosmin Gorgovan <cosmin at linux-geek dot org>
-  Copyright 2017 The University of Manchester
+  Copyright 2021 The University of Manchester
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-
       http://www.apache.org/licenses/LICENSE-2.0
-
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,7 +51,7 @@ int uncnd_branch_print_pre_inst_handler(mambo_context *ctx) {
 int uncnd_branch_print_post_inst_handler(mambo_context *ctx) {
   mambo_branch_type type = mambo_get_branch_type(ctx);
   if (!(type & BRANCH_COND || type & BRANCH_NONE)) {
-    fprintf(stderr, "A64 unconditional branch: read_addr: %p, target: 0x%ld, branch type: %d\n", mambo_get_source_addr(ctx), ctx->thread_data->code_cache_meta[mambo_get_fragment_id(ctx)].branch_taken_addr, ctx->code.inst);
+    fprintf(stderr, "RISCV unconditional branch: read_addr: %p, target: 0x%ld, branch type: %d\n", mambo_get_source_addr(ctx), ctx->thread_data->code_cache_meta[mambo_get_fragment_id(ctx)].branch_taken_addr, ctx->code.inst);
   }
   return 0;
 }
@@ -67,8 +64,8 @@ __attribute__((constructor)) void uncnd_branch_print_init_plugin() {
   mambo_register_pre_inst_cb(ctx, &uncnd_branch_print_pre_inst_handler);
   mambo_register_pre_thread_cb(ctx, &uncnd_branch_print_pre_thread_handler);
   mambo_register_post_thread_cb(ctx, &uncnd_branch_print_post_thread_handler);
-  
+
   setlocale(LC_NUMERIC, "");
 }
 
-#endif
+#endif 

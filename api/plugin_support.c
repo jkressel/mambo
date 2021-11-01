@@ -3,7 +3,7 @@
       https://github.com/beehive-lab/mambo
 
   Copyright 2013-2016 Cosmin Gorgovan <cosmin at linux-geek dot org>
-  Copyright 2017-2020 The University of Manchester
+  Copyright 2017-2021 The University of Manchester
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -403,11 +403,11 @@ int mambo_add_identity_mapping(mambo_context *ctx) {
   }
 
   uintptr_t addr = (uintptr_t)mambo_get_cc_addr(ctx);
-  #ifdef __arm__
+#ifdef __arm__
   if (ctx->code.inst_type == THUMB_INST) {
     addr |= THUMB;
   }
-  #endif
+#endif
 
   int ret = hash_add(&current_thread->entry_address, addr, addr);
   return (ret) ? 0 : -1;

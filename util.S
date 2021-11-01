@@ -3,7 +3,7 @@
       https://github.com/beehive-lab/mambo
 
   Copyright 2013-2016 Cosmin Gorgovan <cosmin at linux-geek dot org>
-  Copyright 2017-2020 The University of Manchester
+  Copyright 2017-2021 The University of Manchester
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -265,11 +265,15 @@ retry:
   RET
 #elif __riscv
   #ifdef __riscv_atomic
+<<<<<<< HEAD
     sd a2, 0(sp)
     addi sp, sp, 8
     amoadd.d a2, a1, (a0)
     addi sp, sp, -8
     ld a2, 0(sp)
+=======
+    amoadd.d a2, a1, (a0)
+>>>>>>> riscv-plugins
     jr ra
   #endif
 #endif

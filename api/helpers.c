@@ -3,7 +3,7 @@
       https://github.com/beehive-lab/mambo
 
   Copyright 2013-2016 Cosmin Gorgovan <cosmin at linux-geek dot org>
-  Copyright 2017-2020 The University of Manchester
+  Copyright 2017-2021 The University of Manchester
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@
 #include "../api/emit_a64.h"
 #elif __riscv
 #include "../pie/pie-riscv-encoder.h"
+#include "../api/emit_riscv.h"
 #endif
 
 #define not_implemented() \
@@ -314,7 +315,7 @@ void emit_set_reg(mambo_context *ctx, enum reg reg, uintptr_t value) {
 }
 
 int __emit_branch_cond(inst_set inst_type, void *write, uintptr_t target, mambo_cond cond, bool link) {
-  uintptr_t diff;
+  intptr_t diff;
   #ifdef __arm__
     diff = (target & (~THUMB)) - (uintptr_t)write;
   #elif __riscv
@@ -517,10 +518,10 @@ int emit_add_sub_i(mambo_context *ctx, int rd, int rn, int offset) {
         _emit_add_shift_imm(rd, rn, offset >> SHIFTED_ADD_SUB_I_BITS, SHIFTED_ADD_SUB_I_BITS);
       }
     }
-    #elif  defined __riscv
+  #elif  defined __riscv
     emit_riscv_addi(ctx, rd, rn, offset);
-  }
   #endif
+  }
   return 0;
 }
 

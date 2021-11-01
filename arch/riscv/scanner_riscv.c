@@ -3,7 +3,7 @@
       https://github.com/beehive-lab/mambo
 
   Copyright 2020 Guillermo Callaghan <guillermocallaghan at hotmail dot com>
-  Copyright 2020 The University of Manchester
+  Copyright 2020-2021 The University of Manchester
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 
 #include "dbm.h"
 #include "scanner_common.h"
+#include "../../api/helpers.h"
 
 #include "../../api/helpers.h"
 
@@ -626,7 +627,6 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
     debug("  instruction word: 0x%x\n", *read_address);
 
 #ifdef PLUGINS_NEW
-    
     bool skip_inst = riscv_scanner_deliver_callbacks(thread_data, PRE_INST_C, &read_address, inst,
                                                    &write_p, &data_p, basic_block, type, true, &stop);
     if (!skip_inst) {

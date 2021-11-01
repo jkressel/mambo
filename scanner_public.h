@@ -4,7 +4,7 @@
 
   Copyright 2013-2016 Cosmin Gorgovan <cosmin at linux-geek dot org>
   Copyright 2015-2020 Guillermo Callaghan <guillermocallaghan at hotmail dot com>
-  Copyright 2017-2020 The University of Manchester
+  Copyright 2017-2021 The University of Manchester
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.

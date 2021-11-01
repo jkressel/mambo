@@ -8,8 +8,13 @@ PLUGINS+=plugins/branch_count.c
 #PLUGINS+=plugins/strace.c
 #PLUGINS+=plugins/symbol_example.c
 #PLUGINS+=plugins/memcheck/memcheck.S plugins/memcheck/memcheck.c plugins/memcheck/naive_stdlib.c
+<<<<<<< HEAD
 PLUGINS+=plugins/cnd_branch_print.c
 PLUGINS+=plugins/uncnd_branch_print.c
+=======
+#PLUGINS+=plugins/cnd_branch_print.c
+#PLUGINS+=plugins/uncnd_branch_print.c
+>>>>>>> riscv-plugins
 
 OPTS= -DDBM_LINK_UNCOND_IMM
 OPTS+=-DDBM_INLINE_UNCOND_IMM
@@ -53,7 +58,7 @@ ifeq ($(ARCH),aarch64)
 	SOURCES += api/emit_a64.c
 endif
 ifeq ($(ARCH), riscv64)
-  # HEADERS += api/emit_riscv.h
+    HEADERS += api/emit_riscv.h
 	LDFLAGS += -Wl,-Ttext-segment=$(or $(TEXT_SEGMENT),0x7f000000)
 	PIE += pie/pie-riscv-field-decoder.o
 	PIE += pie/pie-riscv-encoder.o
