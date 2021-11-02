@@ -23,20 +23,31 @@
 #include <inttypes.h>
 #include "../plugins.h"
 
+uint64_t uncnd_global_count = 0;
+
 int uncnd_branch_print_pre_thread_handler(mambo_context *ctx) {
   uint64_t *uncnd_br_count = mambo_alloc(ctx, sizeof(uint64_t));
-  *uncnd_br_count = 0;
   assert(uncnd_br_count != NULL);
+  *uncnd_br_count = 0;
   mambo_set_thread_plugin_data(ctx, uncnd_br_count);
   return 0;
+}
+
+void uncnd_print_count(uint64_t count) {
+  fprintf(stderr, "%'lu unconditional branches executed in total.\n", count);
 }
 
 // Called when a thread exits, or in all threads when the process exits
 int uncnd_branch_print_post_thread_handler(mambo_context *ctx) {
   uint64_t *uncnd_br_count = mambo_get_thread_plugin_data(ctx);
   fprintf(stderr, "%'lu unconditional branches executed in thread %d\n", *uncnd_br_count, mambo_get_thread_id(ctx));
+  atomic_increment_u64(&uncnd_global_count, *uncnd_br_count);
   mambo_free(ctx, uncnd_br_count);
   return 0;
+}
+
+int uncnd_branch_print_exit_handler(mambo_context *ctx) {
+  uncnd_print_count(uncnd_global_count);
 }
 
 int uncnd_branch_print_pre_inst_handler(mambo_context *ctx) {
@@ -64,6 +75,7 @@ __attribute__((constructor)) void uncnd_branch_print_init_plugin() {
   mambo_register_pre_inst_cb(ctx, &uncnd_branch_print_pre_inst_handler);
   mambo_register_pre_thread_cb(ctx, &uncnd_branch_print_pre_thread_handler);
   mambo_register_post_thread_cb(ctx, &uncnd_branch_print_post_thread_handler);
+  mambo_register_exit_cb(ctx, &uncnd_branch_print_exit_handler);
 
   setlocale(LC_NUMERIC, "");
 }

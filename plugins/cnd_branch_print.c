@@ -23,6 +23,8 @@
 #include <inttypes.h>
 #include "../plugins.h"
 
+uint64_t cnd_global_count = 0;
+
 int cnd_branch_print_pre_thread_handler(mambo_context *ctx) {
   uint64_t *cnd_br_count = mambo_alloc(ctx, sizeof(uint64_t));
   *cnd_br_count = 0;
@@ -31,10 +33,15 @@ int cnd_branch_print_pre_thread_handler(mambo_context *ctx) {
   return 0;
 }
 
+void cnd_print_count(uint64_t count) {
+  fprintf(stderr, "%'lu conditional branches executed in total.\n", count);
+}
+
 // Called when a thread exits, or in all threads when the process exits
 int cnd_branch_print_post_thread_handler(mambo_context *ctx) {
   uint64_t *cnd_br_count = mambo_get_thread_plugin_data(ctx);
   fprintf(stderr, "%'lu conditional branches executed in thread %d\n", *cnd_br_count, mambo_get_thread_id(ctx));
+  atomic_increment_u64(&cnd_global_count, *cnd_br_count);
   mambo_free(ctx, cnd_br_count);
   return 0;
 }
@@ -57,6 +64,10 @@ int cnd_branch_print_post_inst_handler(mambo_context *ctx) {
   return 0;
 }
 
+int cnd_branch_print_exit_handler(mambo_context *ctx) {
+  cnd_print_count(cnd_global_count);
+}
+
 __attribute__((constructor)) void cnd_branch_print_init_plugin() {
   mambo_context *ctx = mambo_register_plugin();
   assert(ctx != NULL);
@@ -65,11 +76,7 @@ __attribute__((constructor)) void cnd_branch_print_init_plugin() {
   mambo_register_pre_inst_cb(ctx, &cnd_branch_print_pre_inst_handler);
   mambo_register_pre_thread_cb(ctx, &cnd_branch_print_pre_thread_handler);
   mambo_register_post_thread_cb(ctx, &cnd_branch_print_post_thread_handler);
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> riscv-plugins
+  mambo_register_exit_cb(ctx, &cnd_branch_print_exit_handler);
   setlocale(LC_NUMERIC, "");
 }
 
