@@ -265,15 +265,7 @@ retry:
   RET
 #elif __riscv
   #ifdef __riscv_atomic
-<<<<<<< HEAD
-    sd a2, 0(sp)
-    addi sp, sp, 8
     amoadd.d a2, a1, (a0)
-    addi sp, sp, -8
-    ld a2, 0(sp)
-=======
-    amoadd.d a2, a1, (a0)
->>>>>>> riscv-plugins
     jr ra
   #endif
 #endif

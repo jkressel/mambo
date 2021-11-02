@@ -134,19 +134,6 @@ void _function_callback_wrapper(mambo_context *ctx, watched_func_t *func) {
     ctx->event_type = POST_FN_C;
     func->post_callback(ctx);
 
-<<<<<<< HEAD
-      #if defined __arm__ || __aarch64__
-      emit_pop(ctx, (1 << es) | (1 << lr));
-    #elif defined __riscv
-      emit_pop(ctx, (1 << x8) | (1 << ra));
-    #endif
-    // IHL(LR) - emulated return to the caller of malloc()
-      #if defined __arm__ || __aarch64__
-      emit_indirect_branch_by_spc(ctx, lr);
-    #elif defined __riscv
-      #warning "Undefined for riscv"
-    #endif
-=======
 #if defined __arm__ || __aarch64__
       emit_pop(ctx, (1 << es) | (1 << lr));
 #elif defined __riscv
@@ -158,7 +145,6 @@ void _function_callback_wrapper(mambo_context *ctx, watched_func_t *func) {
 #elif defined __riscv
       #warning "Undefined for riscv"
 #endif
->>>>>>> riscv-plugins
     emit_local_fcall(ctx, &fcall);
   }
 #endif
