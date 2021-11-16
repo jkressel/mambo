@@ -37,6 +37,10 @@ void cnd_print_count(uint64_t count) {
   fprintf(stderr, "%'lu conditional branches executed in total.\n", count);
 }
 
+void cnd_print_branch(uintptr_t *source, uintptr_t *target, uintptr_t *number) {
+  printf("RISCV conditional branch: read_addr: %p, target: %p, branch_no: %d\n", source, *target, *number);
+}
+
 // Called when a thread exits, or in all threads when the process exits
 int cnd_branch_print_post_thread_handler(mambo_context *ctx) {
   uint64_t *cnd_br_count = mambo_get_thread_plugin_data(ctx);
@@ -47,32 +51,29 @@ int cnd_branch_print_post_thread_handler(mambo_context *ctx) {
 }
 
 int cnd_branch_print_pre_inst_handler(mambo_context *ctx) {
-  uint64_t *counter = mambo_get_thread_plugin_data(ctx);
-
   mambo_branch_type type = mambo_get_branch_type(ctx);
   if (type & BRANCH_COND) {
+    uint64_t *counter = mambo_get_thread_plugin_data(ctx);
     emit_counter64_incr(ctx, counter, 1);
-  }
-  return 0;
-}
-
-int cnd_branch_print_post_inst_handler(mambo_context *ctx) {
-  mambo_branch_type type = mambo_get_branch_type(ctx);
-  if (type & BRANCH_COND) {
-    fprintf(stderr, "RISCV conditional branch: read_addr: %p, target: 0x%ld\n", mambo_get_source_addr(ctx), ctx->thread_data->code_cache_meta[mambo_get_fragment_id(ctx)].branch_taken_addr);
+    emit_push(ctx, 1 << a0 | 1 << a1 | 1 << a2 | 1 << a3 | 1 << a4 | 1 << a5 | 1 << a6 | 1 << a7 | 1 << x1 | 1 << t0 | 1 << t1 | 1 << t2 | 1 << t3 | 1 << t4 | 1 << t5 | 1 << t6 | 1 << s0 | 1 << s1 | 1 << s2 | 1 << s3 | 1 << s4 | 1 << s5 | 1 << s6 | 1 << s7 | 1 << s8 | 1 << s9 | 1 << s10 | 1 << s11);
+    emit_set_reg(ctx, a0, (uintptr_t)ctx->code.read_address);
+    emit_set_reg(ctx, a1, (uintptr_t)&ctx->thread_data->code_cache_meta[mambo_get_fragment_id(ctx)].branch_taken_addr);
+    emit_set_reg(ctx, a2, (uintptr_t)counter);
+    emit_fcall(ctx, &cnd_print_branch);
+    emit_pop(ctx, 1 << a0 | 1 << a1 | 1 << a2 | 1 << a3 | 1 << a4 | 1 << a5 | 1 << a6 | 1 << a7 | 1 << x1 | 1 << t0 | 1 << t1 | 1 << t2 | 1 << t3 | 1 << t4 | 1 << t5 | 1 << t6 | 1 << s0 | 1 << s1 | 1 << s2 | 1 << s3 | 1 << s4 | 1 << s5 | 1 << s6 | 1 << s7 | 1 << s8 | 1 << s9 | 1 << s10 | 1 << s11);
   }
   return 0;
 }
 
 int cnd_branch_print_exit_handler(mambo_context *ctx) {
   cnd_print_count(cnd_global_count);
+  return 0;
 }
 
 __attribute__((constructor)) void cnd_branch_print_init_plugin() {
   mambo_context *ctx = mambo_register_plugin();
   assert(ctx != NULL);
 
-  mambo_register_post_inst_cb(ctx, &cnd_branch_print_post_inst_handler);
   mambo_register_pre_inst_cb(ctx, &cnd_branch_print_pre_inst_handler);
   mambo_register_pre_thread_cb(ctx, &cnd_branch_print_pre_thread_handler);
   mambo_register_post_thread_cb(ctx, &cnd_branch_print_post_thread_handler);

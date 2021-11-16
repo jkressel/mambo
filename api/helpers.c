@@ -372,7 +372,7 @@ void emit_fcall(mambo_context *ctx, void *function_ptr) {
   int ret = __emit_branch_cond(ctx->code.inst_type, ctx->code.write_p, (uintptr_t)function_ptr, AL, true);
   if (ret == 0) return;
   #ifdef __riscv
-    emit_set_reg(ctx, ra, (uintptr_t)function_ptr);
+    emit_set_reg(ctx, a3, (uintptr_t)function_ptr);
   #else
     emit_set_reg(ctx, lr, (uintptr_t)function_ptr);
   #endif
@@ -385,6 +385,8 @@ void emit_fcall(mambo_context *ctx, void *function_ptr) {
   }
 #elif __aarch64__
   emit_a64_BLR(ctx, lr);
+#elif __riscv
+  emit_riscv_jalr(ctx, ra, a3, 0);
 #endif
 }
 
