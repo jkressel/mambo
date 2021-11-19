@@ -43,7 +43,7 @@ void cnd_print_branch(uintptr_t *source, uintptr_t *target, uintptr_t *number) {
 
 // Called when a thread exits, or in all threads when the process exits
 int cnd_branch_print_post_thread_handler(mambo_context *ctx) {
-  uint64_t *cnd_br_count = mambo_get_thread_plugin_data(ctx);
+  uint64_t *cnd_br_count = mambo_get_thread_plugin_data(ctx); 
   fprintf(stderr, "%'lu conditional branches executed in thread %d\n", *cnd_br_count, mambo_get_thread_id(ctx));
   atomic_increment_u64(&cnd_global_count, *cnd_br_count);
   mambo_free(ctx, cnd_br_count);
@@ -55,12 +55,12 @@ int cnd_branch_print_pre_inst_handler(mambo_context *ctx) {
   if (type & BRANCH_COND) {
     uint64_t *counter = mambo_get_thread_plugin_data(ctx);
     emit_counter64_incr(ctx, counter, 1);
-    emit_push(ctx, 1 << a0 | 1 << a1 | 1 << a2 | 1 << a3 | 1 << a4 | 1 << a5 | 1 << a6 | 1 << a7 | 1 << x1 | 1 << t0 | 1 << t1 | 1 << t2 | 1 << t3 | 1 << t4 | 1 << t5 | 1 << t6 | 1 << s0 | 1 << s1 | 1 << s2 | 1 << s3 | 1 << s4 | 1 << s5 | 1 << s6 | 1 << s7 | 1 << s8 | 1 << s9 | 1 << s10 | 1 << s11);
+    emit_push(ctx, 1 << a0 | 1 << a1 | 1 << a2);
     emit_set_reg(ctx, a0, (uintptr_t)ctx->code.read_address);
     emit_set_reg(ctx, a1, (uintptr_t)&ctx->thread_data->code_cache_meta[mambo_get_fragment_id(ctx)].branch_taken_addr);
     emit_set_reg(ctx, a2, (uintptr_t)counter);
-    emit_fcall(ctx, &cnd_print_branch);
-    emit_pop(ctx, 1 << a0 | 1 << a1 | 1 << a2 | 1 << a3 | 1 << a4 | 1 << a5 | 1 << a6 | 1 << a7 | 1 << x1 | 1 << t0 | 1 << t1 | 1 << t2 | 1 << t3 | 1 << t4 | 1 << t5 | 1 << t6 | 1 << s0 | 1 << s1 | 1 << s2 | 1 << s3 | 1 << s4 | 1 << s5 | 1 << s6 | 1 << s7 | 1 << s8 | 1 << s9 | 1 << s10 | 1 << s11);
+    emit_safe_fcall(ctx, &cnd_print_branch, 3);
+    emit_pop(ctx, 1 << a0 | 1 << a1 | 1 << a2);
   }
   return 0;
 }

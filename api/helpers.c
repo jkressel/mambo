@@ -371,10 +371,11 @@ void emit_fcall(mambo_context *ctx, void *function_ptr) {
   // First try an immediate call, and if that is out of range then generate an indirect call
   int ret = __emit_branch_cond(ctx->code.inst_type, ctx->code.write_p, (uintptr_t)function_ptr, AL, true);
   if (ret == 0) return;
-  #ifdef __riscv
-    emit_set_reg(ctx, a3, (uintptr_t)function_ptr);
-  #else
+  #ifdef __arm__ || __aarch64__
     emit_set_reg(ctx, lr, (uintptr_t)function_ptr);
+  #elif __riscv
+    emit_push(ctx, 1 << s0);
+    emit_set_reg(ctx, s0, (uintptr_t)function_ptr);
   #endif
 #ifdef __arm__
   inst_set type = mambo_get_inst_type(ctx);
@@ -386,14 +387,13 @@ void emit_fcall(mambo_context *ctx, void *function_ptr) {
 #elif __aarch64__
   emit_a64_BLR(ctx, lr);
 #elif __riscv
-  emit_riscv_jalr(ctx, ra, a3, 0);
+  emit_riscv_jalr(ctx, ra, s0, 0);
+  emit_pop(ctx, 1 << s0);
 #endif
 }
 
 int emit_safe_fcall(mambo_context *ctx, void *function_ptr, int argno) {
-#ifdef __riscv
-  uintptr_t to_push = (1 << ra);
-#else
+#ifdef __arm__ || __aarch64__
   uintptr_t to_push = (1 << lr);
 #endif
 #ifdef __arm__
@@ -401,14 +401,29 @@ int emit_safe_fcall(mambo_context *ctx, void *function_ptr, int argno) {
 #elif __aarch64__
   to_push |= 0x1FF;
 #elif __riscv
-  to_push |= 0x3FC00;
+  uintptr_t to_push = 0x3FC00;
 #endif
 
   if (argno > MAX_FCALL_ARGS) return -1;
+
+#ifdef __arm__ || __aarch64__
   to_push &= ~(((1 << MAX_FCALL_ARGS)-1) >> (MAX_FCALL_ARGS - argno));
+#elif __riscv
+  //to_push &= ~(((1 << 18)-1) >> (MAX_FCALL_ARGS - argno));
+  to_push |= 1 << a3;
+  to_push |= 1 << a4;
+  to_push |= 1 << a5;
+  to_push |= 1 << a6;
+  to_push |= 1 << a7;
+  to_push |= 1 << ra;
+#endif
 
   emit_push(ctx, to_push);
+#ifdef __arm__ || __aarch64__
   emit_set_reg_ptr(ctx, MAX_FCALL_ARGS, function_ptr);
+#elif __riscv
+  emit_set_reg_ptr(ctx, a7, function_ptr);
+#endif
   emit_fcall(ctx, safe_fcall_trampoline);
   emit_pop(ctx, to_push);
 
