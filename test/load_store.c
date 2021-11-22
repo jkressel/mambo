@@ -32,6 +32,8 @@
 #include "../pie/pie-arm-decoder.h"
 #elif __aarch64__
 #include "../pie/pie-a64-encoder.h"
+#elif __riscv
+#include "../pie/pie-riscv-encoder.h"
 #endif
 
 #define CODE_SIZE  (1024*1024)
@@ -61,6 +63,12 @@ extern void test_a64(void *, void *);
 extern void *end_test_a64;
 
 #define ucontext_pc uc_mcontext.pc
+
+#elif __riscv
+extern void test_riscv_64(void *, void *);
+extern void *end_test_riscv_64;
+
+#define ucontext_pc uc_mcontext.__gregs[REG_PC]
 #endif
 
 void test_wrapper(char *name, ld_st_test test, void* test_end, void *heap, void *stack) {
@@ -109,6 +117,12 @@ void print_addr_and_retry(int sig, siginfo_t *info, void *c) {
   bkpt++;
   orig_inst = *bkpt;
   a64_BRK(&bkpt, 0);
+  __clear_cache(bkpt, bkpt+1);
+#elif __riscv
+  uint16_t *bkpt = (uint16_t *)cont->ucontext_pc;
+  bkpt++;
+  orig_inst = *bkpt;
+  riscv_ebreak(&bkpt);
   __clear_cache(bkpt, bkpt+1);
 #endif
   printf("%p\n", info->si_addr);
@@ -176,5 +190,9 @@ int main(int argc, char **argv) {
   test_wrapper("a32", test_a32, (void *)&end_test_a32, heap, stack+STACK_SIZE);
 #elif __aarch64__
   test_wrapper("a64", test_a64, (void *)&end_test_a64, heap, stack+STACK_SIZE);
+#elif __riscv
+#if __riscv_xlen == 64
+  test_wrapper("riscv_64", test_riscv_64, (void *)&end_test_riscv_64, heap, stack+STACK_SIZE);
+#endif
 #endif
 }

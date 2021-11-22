@@ -358,37 +358,37 @@ test_thumb32:
 
   // VPUSH,VPOP
   VPUSH {D0}
-  VPUSH {S0}
-  VPOP  {S0}
+  VPUSH {s0}
+  VPOP  {s0}
   VPOP  {D0}
   VPUSH {S4-S8}
   VPOP  {S4-S8}
   VPUSH {D4-D15}
   VPOP  {D4-D15}
-  VPUSH {S0-S31}
-  VPOP  {S0-S31}
+  VPUSH {s0-S31}
+  VPOP  {s0-S31}
   VPUSH {D16-D31}
   VPOP  {D16-D31}
 
   // VSTM, VLDM
   MOV R2, R0
-  VSTM R2, {S0}
-  VLDM R2, {S0}
+  VSTM R2, {s0}
+  VLDM R2, {s0}
   VSTM R2, {D0-D15}
   VLDM R2, {D0-D15}
-  VSTM R2!, {S0}
-  VLDM R2!, {S0}
+  VSTM R2!, {s0}
+  VLDM R2!, {s0}
   VSTM R2!, {D16-D31}
   VLDM R2!, {D16-D31}
 
   // VLDR, VSTR
   ADD R3, R0, 0x800
-  VSTR S0, [R3]
-  VLDR S0, [R3]
+  VSTR s0, [R3]
+  VLDR s0, [R3]
   VSTR D0, [R3]
   VLDR D0, [R3]
-  VSTR S16, [R3, #0x3FC]
-  VLDR S16, [R3, #0x3FC]
+  VSTR s06, [R3, #0x3FC]
+  VLDR s06, [R3, #0x3FC]
   VSTR D17, [R3, #-0x3FC]
   VLDR D17, [R3, #-0x3FC]
 
@@ -1143,16 +1143,16 @@ test_a32:
 
   // VLDR, VSTR
   ADD R4, R0, #0x800
-  VLDR S0, [R4]
-  VLDR S0, [R4, #32]
-  VLDR S0, [R4, #-32]
-  VLDR S0, [R4, #0x3FC]
-  VLDR S0, [R4, #-0x3FC]
-  VSTR S0, [R4]
-  VSTR S0, [R4, #32]
-  VSTR S0, [R4, #-32]
-  VSTR S0, [R4, #0x3FC]
-  VSTR S0, [R4, #-0x3FC]
+  VLDR s0, [R4]
+  VLDR s0, [R4, #32]
+  VLDR s0, [R4, #-32]
+  VLDR s0, [R4, #0x3FC]
+  VLDR s0, [R4, #-0x3FC]
+  VSTR s0, [R4]
+  VSTR s0, [R4, #32]
+  VSTR s0, [R4, #-32]
+  VSTR s0, [R4, #0x3FC]
+  VSTR s0, [R4, #-0x3FC]
 
   VLDR D0, [R4]
   VLDR D0, [R4, #32]
@@ -1166,24 +1166,24 @@ test_a32:
   VSTR D0, [R4, #-0x3FC]
 
   // VLDM, VSTM
-  VSTM R0, {S1}
-  VLDM R0, {S1}
-  VSTM R0, {S0-S31}
-  VLDM R0, {S0-S31}
+  VSTM R0, {s0}
+  VLDM R0, {s0}
+  VSTM R0, {s0-S31}
+  VLDM R0, {s0-S31}
   VSTM R0, {D1}
   VLDM R0, {D1}
   VSTM R0, {D0-D15}
   VLDM R0, {D0-D15}
 
   // VPUSH, VPOP
-  VPUSH {S0}
+  VPUSH {s0}
   VPUSH {D0}
-  VPUSH {S0-S31}
+  VPUSH {s0-S31}
   VPUSH {D0-D15}
   VPOP {D0-D15}
-  VPOP {S0-S31}
+  VPOP {s0-S31}
   VPOP {D0}
-  VPOP {S0}
+  VPOP {s0}
 
   // VLD1 / VST1
   ADD R2, R0, #0x8000
@@ -1498,7 +1498,7 @@ test_a64:
   MOV SP, X1
 
   // LDRI {, B, H, SB, SH, SW}
-  ADD X4, X0, #0x400
+  ADD X4, X0, #0x400 //??????????????????????????
   LDR   X2, [X4]
   LDR   X2, [X4, #8]
   LDR   X2, [X4, #7]
@@ -1544,20 +1544,20 @@ test_a64:
   LDR   H0, [X4], #255
   LDR   H0, [X4], #-256
 
-  LDR   S0, [X4]
-  LDR   S0, [X4, #8]
-  LDR   S0, [X4, #7]
-  LDR   S0, [X4, #-5]
-  LDR   S0, [X4, #16380]
-  LDR   S0, [X4, #255]
-  LDR   S0, [X4, #-256]
-  LDR   S0, [X4, #0]!
-  LDR   S0, [X4, #255]!
-  LDR   S0, [X4, #-256]!
-  LDR   S0, [X4], #0
-  LDR   S0, [X4], #1
-  LDR   S0, [X4], #255
-  LDR   S0, [X4], #-256
+  LDR   s0, [X4]
+  LDR   s0, [X4, #8]
+  LDR   s0, [X4, #7]
+  LDR   s0, [X4, #-5]
+  LDR   s0, [X4, #16380]
+  LDR   s0, [X4, #255]
+  LDR   s0, [X4, #-256]
+  LDR   s0, [X4, #0]!
+  LDR   s0, [X4, #255]!
+  LDR   s0, [X4, #-256]!
+  LDR   s0, [X4], #0
+  LDR   s0, [X4], #1
+  LDR   s0, [X4], #255
+  LDR   s0, [X4], #-256
 
   LDR   D0, [X4]
   LDR   D0, [X4, #8]
@@ -1948,20 +1948,20 @@ test_a64:
   STR   H0, [X4], #255
   STR   H0, [X4], #-256
 
-  STR   S0, [X4]
-  STR   S0, [X4, #8]
-  STR   S0, [X4, #7]
-  STR   S0, [X4, #-5]
-  STR   S0, [X4, #16380]
-  STR   S0, [X4, #255]
-  STR   S0, [X4, #-256]
-  STR   S0, [X4, #0]!
-  STR   S0, [X4, #255]!
-  STR   S0, [X4, #-256]!
-  STR   S0, [X4], #0
-  STR   S0, [X4], #1
-  STR   S0, [X4], #255
-  STR   S0, [X4], #-256
+  STR   s0, [X4]
+  STR   s0, [X4, #8]
+  STR   s0, [X4, #7]
+  STR   s0, [X4, #-5]
+  STR   s0, [X4, #16380]
+  STR   s0, [X4, #255]
+  STR   s0, [X4, #-256]
+  STR   s0, [X4, #0]!
+  STR   s0, [X4, #255]!
+  STR   s0, [X4, #-256]!
+  STR   s0, [X4], #0
+  STR   s0, [X4], #1
+  STR   s0, [X4], #255
+  STR   s0, [X4], #-256
 
   STR   D0, [X4]
   STR   D0, [X4, #8]
@@ -2175,19 +2175,19 @@ test_a64:
   LDP W2, W3, [X7, #252]!
   LDP W2, W3, [X7, #-256]!
 
-  LDP S0, S1, [X7]
-  LDP S0, S1, [X7, #-16]
-  LDP S0, S1, [X7, #16]
-  LDP S0, S1, [X7, #-256]
-  LDP S0, S1, [X7, #252]
-  LDP S0, S1, [X7], #0
-  LDP S0, S1, [X7], #8
-  LDP S0, S1, [X7], #252
-  LDP S0, S1, [X7], #-256
-  LDP S0, S1, [X7, #0]!
-  LDP S0, S1, [X7, #8]!
-  LDP S0, S1, [X7, #252]!
-  LDP S0, S1, [X7, #-256]!
+  LDP s0, s0, [X7]
+  LDP s0, s0, [X7, #-16]
+  LDP s0, s0, [X7, #16]
+  LDP s0, s0, [X7, #-256]
+  LDP s0, s0, [X7, #252]
+  LDP s0, s0, [X7], #0
+  LDP s0, s0, [X7], #8
+  LDP s0, s0, [X7], #252
+  LDP s0, s0, [X7], #-256
+  LDP s0, s0, [X7, #0]!
+  LDP s0, s0, [X7, #8]!
+  LDP s0, s0, [X7, #252]!
+  LDP s0, s0, [X7, #-256]!
 
   LDP D0, D1, [X7]
   LDP D0, D1, [X7, #-16]
@@ -2302,11 +2302,11 @@ test_a64:
   LDNP W3, W4, [X7, #-256]
   LDNP W3, W4, [X7, #252]
 
-  LDNP S0, S1, [X7]
-  LDNP S0, S1, [X7, #-16]
-  LDNP S0, S1, [X7, #16]
-  LDNP S0, S1, [X7, #-256]
-  LDNP S0, S1, [X7, #252]
+  LDNP s0, s0, [X7]
+  LDNP s0, s0, [X7, #-16]
+  LDNP s0, s0, [X7, #16]
+  LDNP s0, s0, [X7, #-256]
+  LDNP s0, s0, [X7, #252]
   LDNP D2, D3, [X7]
   LDNP D2, D3, [X7, #-16]
   LDNP D2, D3, [X7, #16]
@@ -2331,11 +2331,11 @@ test_a64:
   STNP W3, W4, [X7, #-256]
   STNP W3, W4, [X7, #252]
 
-  STNP S0, S1, [X7]
-  STNP S0, S1, [X7, #-16]
-  STNP S0, S1, [X7, #16]
-  STNP S0, S1, [X7, #-256]
-  STNP S0, S1, [X7, #252]
+  STNP s0, s0, [X7]
+  STNP s0, s0, [X7, #-16]
+  STNP s0, s0, [X7, #16]
+  STNP s0, s0, [X7, #-256]
+  STNP s0, s0, [X7, #252]
   STNP D0, D1, [X7]
   STNP D0, D1, [X7, #-16]
   STNP D0, D1, [X7, #16]
@@ -2894,7 +2894,7 @@ test_a64:
   LDR   X2, lit_a64
   LDR   W3, lit_a64
   LDRSW X2, lit_a64
-  LDR   S0, lit_a64
+  LDR   s0, lit_a64
   LDR   D1, lit_a64
   LDR   Q2, lit_a64
 
@@ -2908,4 +2908,104 @@ lit_a64: .quad 0
 
 .global end_test_a64
 end_test_a64:
+
+#elif __riscv
+.global test_riscv_64
+.func
+.type test_riscv_64, %function
+
+test_riscv_64:
+
+  mv x31, sp
+  mv sp, a1
+
+  addi s0, a0, 0x400
+  lw   a2, 0(s0)
+  lw   a2, 8(s0)
+  lw   a2, 7(s0)
+  lw   a2, -5(s0)
+  lw   a2, 0x7FF(s0)
+  lw   a2, 255(s0)
+  lw   a2, -256(s0)
+
+  lh   a2, 0(s0)
+  lh   a2, 8(s0)
+  lh   a2, 7(s0)
+  lh   a2, -5(s0)
+  lh   a2, 0x7FF(s0)
+  lh   a2, 255(s0)
+  lh   a2, -256(s0)
+
+  lhu   a2, 0(s0)
+  lhu   a2, 8(s0)
+  lhu   a2, 7(s0)
+  lhu   a2, -5(s0)
+  lhu   a2, 0x7FF(s0)
+  lhu   a2, 255(s0)
+  lhu   a2, -256(s0)
+
+  ld   a2, 0(s0)
+  ld   a2, 8(s0)
+  ld   a2, 7(s0)
+  ld   a2, -5(s0)
+  ld   a2, 0x7FF(s0)
+  ld   a2, 255(s0)
+  ld   a2, -256(s0)
+
+  lb   a2, 0(s0)
+  lb   a2, 8(s0)
+  lb   a2, 7(s0)
+  lb   a2, -5(s0)
+  lb   a2, 0x7FF(s0)
+  lb   a2, 255(s0)
+  lb   a2, -256(s0)
+
+  lbu   a2, 0(s0)
+  lbu   a2, 8(s0)
+  lbu   a2, 7(s0)
+  lbu   a2, -5(s0)
+  lbu   a2, 0x7FF(s0)
+  lbu   a2, 255(s0)
+  lbu   a2, -256(s0)
+
+  addi s0, s0, 0x400
+  sw   a2, 0(s0)
+  sw   a2, 8(s0)
+  sw   a2, 7(s0)
+  sw   a2, -5(s0)
+  sw   a2, 0x7FF(s0)
+  sw   a2, 255(s0)
+  sw   a2, -256(s0)
+
+  sh   a2, 0(s0)
+  sh   a2, 8(s0)
+  sh   a2, 7(s0)
+  sh   a2, -5(s0)
+  sh   a2, 0x7FF(s0)
+  sh   a2, 255(s0)
+  sh   a2, -256(s0)
+
+  sd   a2, 0(s0)
+  sd   a2, 8(s0)
+  sd   a2, 7(s0)
+  sd   a2, -5(s0)
+  sd   a2, 0x7FF(s0)
+  sd   a2, 255(s0)
+  sd   a2, -256(s0)
+
+  sb   a2, 0(s0)
+  sb   a2, 8(s0)
+  sb   a2, 7(s0)
+  sb   a2, -5(s0)
+  sb   a2, 0x7FF(s0)
+  sb   a2, 255(s0)
+  sb   a2, -256(s0)
+
+  mv sp, x31
+  ret
+.endfunc
+
+.global end_test_riscv_64
+end_test_riscv_64:
+
 #endif
