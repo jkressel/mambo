@@ -33,7 +33,7 @@
 #elif __aarch64__
 #include "../pie/pie-a64-encoder.h"
 #elif __riscv
-#include "../pie/pie-riscv-encoder.h"
+#include "../pie/pie-riscv-encoder.c"
 #endif
 
 #define CODE_SIZE  (1024*1024)
@@ -119,10 +119,10 @@ void print_addr_and_retry(int sig, siginfo_t *info, void *c) {
   a64_BRK(&bkpt, 0);
   __clear_cache(bkpt, bkpt+1);
 #elif __riscv
-  uint16_t *bkpt = (uint16_t *)cont->ucontext_pc;
+  uint32_t *bkpt = (uint32_t *)cont->ucontext_pc;
   bkpt++;
   orig_inst = *bkpt;
-  riscv_ebreak(&bkpt);
+  riscv_ebreak((uint16_t**)(&bkpt));
   __clear_cache(bkpt, bkpt+1);
 #endif
   printf("%p\n", info->si_addr);
