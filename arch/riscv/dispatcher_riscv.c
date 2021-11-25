@@ -143,7 +143,7 @@ void dispatcher_riscv(dbm_thread *thread_data, uint32_t source_index, branch_typ
       break;
 #endif
 #ifdef DBM_LINK_UNCOND_IMM
-    case jal_riscv:
+    case jal_riscv: {
       uint16_t *branch_addr = thread_data->code_cache_meta[source_index].exit_branch_addr;
       intptr_t offset = (block_address+6) - (intptr_t)branch_addr;
       if (offset <= 0xFFFFF && offset >= -0xFFFFF) {
@@ -158,6 +158,7 @@ void dispatcher_riscv(dbm_thread *thread_data, uint32_t source_index, branch_typ
       }
       thread_data->code_cache_meta[source_index].branch_cache_status = BRANCH_LINKED;
       break;
+    }
 #endif
   }
 }

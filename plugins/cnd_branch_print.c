@@ -74,8 +74,8 @@ __attribute__((constructor)) void cnd_branch_print_init_plugin() {
   mambo_context *ctx = mambo_register_plugin();
   assert(ctx != NULL);
 
-  mambo_register_pre_inst_cb(ctx, &cnd_branch_print_pre_inst_handler);
   mambo_register_pre_thread_cb(ctx, &cnd_branch_print_pre_thread_handler);
+  mambo_register_pre_inst_cb(ctx, &cnd_branch_print_pre_inst_handler);
   mambo_register_post_thread_cb(ctx, &cnd_branch_print_post_thread_handler);
   mambo_register_exit_cb(ctx, &cnd_branch_print_exit_handler);
   setlocale(LC_NUMERIC, "");

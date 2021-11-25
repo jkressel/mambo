@@ -397,211 +397,42 @@ safe_fcall_trampoline:
 
   RET
 #elif __riscv
+
 #if __riscv_xlen == 32
-  addi sp, sp, -32
-  sw x1, 0(sp)
-  sw t0, 4(sp)
-  sw t1, 8(sp)
-  sw t2, 12(sp)
-  sw t3, 16(sp)
-  sw t4, 20(sp)
-  sw t5, 24(sp)
-  sw t6, 28(sp)
-
-#ifdef __riscv_fdiv
-#if   __riscv_flen == 32
-  addi sp, sp, -80
-  fsw f0, 0(sp)
-  fsw f1, 4(sp)
-  fsw f2, 8(sp)
-  fsw f3, 12(sp)
-  fsw f4, 16(sp)
-  fsw f5, 20(sp)
-  fsw f6, 24(sp)
-  fsw f7, 28(sp)
-  fsw f28, 32(sp)
-  fsw f29, 36(sp)
-  fsw f30, 40(sp)
-  fsw f31, 44(sp)
-  fsw f10, 48(sp)
-  fsw f11, 52(sp)
-  fsw f12, 56(sp)
-  fsw f13, 60(sp)
-  fsw f14, 64(sp)
-  fsw f15, 68(sp)
-  fsw f16, 72(sp)
-  fsw f17, 76(sp)
-
-#endif
-#endif
-
-
+  addi sp, sp, -4
+  sw ra, 0(sp)
 #elif __riscv_xlen == 64
-  addi sp, sp, -160
-  sd x1, 0(sp)
-  sd t0, 8(sp)
-  sd t1, 16(sp)
-  sd t2, 24(sp)
-  sd t3, 32(sp)
-  sd t4, 40(sp)
-  sd t5, 48(sp)
-  sd t6, 56(sp)
-  sd s0, 64(sp)
-  sd s1, 72(sp)
-  sd s2, 80(sp)
-  sd s3, 88(sp)
-  sd s4, 96(sp)
-  sd s5, 104(sp)
-  sd s6, 112(sp)
-  sd s7, 120(sp)
-  sd s8, 128(sp)
-  sd s9, 136(sp)
-  sd s10, 144(sp)
-  sd s11, 152(sp)
+  addi sp, sp, -32
+  sd ra, 0(sp)
+  sd s0, 8(sp)
+  sd s1, 16(sp)
+  sd s2, 24(sp)
+#endif
+  jal ra, push_caller_saved_registers
+  jal ra, push_fp
 
-  #ifdef __riscv_fdiv
-#if   __riscv_flen == 64
-  addi sp, sp, -256
-  fsd f0, 0(sp)
-  fsd f1, 8(sp)
-  fsd f2, 16(sp)
-  fsd f3, 24(sp)
-  fsd f4, 32(sp)
-  fsd f5, 40(sp)
-  fsd f6, 48(sp)
-  fsd f7, 56(sp)
-  fsd f28, 64(sp)
-  fsd f29, 72(sp)
-  fsd f30, 80(sp)
-  fsd f31, 88(sp)
-  fsd f10, 96(sp)
-  fsd f11, 104(sp)
-  fsd f12, 112(sp)
-  fsd f13, 120(sp)
-  fsd f14, 128(sp)
-  fsd f15, 136(sp)
-  fsd f16, 144(sp)
-  fsd f17, 152(sp)
-  fsd f8, 160(sp)
-  fsd f9, 168(sp)
-  fsd f18, 176(sp)
-  fsd f19, 184(sp)
-  fsd f20, 192(sp)
-  fsd f21, 200(sp)
-  fsd f22, 208(sp)
-  fsd f23, 216(sp)
-  fsd f24, 224(sp)
-  fsd f25, 232(sp)
-  fsd f26, 240(sp)
-  fsd f27, 248(sp)
-
-#endif
-#endif
-#endif
+  frcsr s0
+  frflags s1
+  frrm s2
 
   jalr ra, a7
 
+  fscsr s0
+  fsflags s1
+  fsrm s2
+
+  jal ra, pop_fp
+  jal ra, pop_caller_saved_registers
+
 #if __riscv_xlen == 32
-
-#ifdef __riscv_fdiv
-#if   __riscv_flen == 32
-  flw f0, 0(sp)
-  flw f1, 4(sp)
-  flw f2, 8(sp)
-  flw f3, 12(sp)
-  flw f4, 16(sp)
-  flw f5, 20(sp)
-  flw f6, 24(sp)
-  flw f7, 28(sp)
-  flw f28, 32(sp)
-  flw f29, 36(sp)
-  flw f30, 40(sp)
-  flw f31, 44(sp)
-  flw f10, 48(sp)
-  flw f11, 52(sp)
-  flw f12, 56(sp)
-  flw f13, 60(sp)
-  flw f14, 64(sp)
-  flw f15, 68(sp)
-  flw f16, 72(sp)
-  flw f17, 76(sp)
-  addi sp, sp, 80
-
-#endif
-#endif
-  lw x1, 0(sp)
-  lw t0, 4(sp)
-  lw t1, 8(sp)
-  lw t2, 12(sp)
-  lw t3, 16(sp)
-  lw t4, 20(sp)
-  lw t5, 24(sp)
-  lw t6, 28(sp)
-  addi sp, sp, 32
-
+  lw ra, 0(sp)
+  addi sp, sp, 4
 #elif __riscv_xlen == 64
-
-#ifdef __riscv_fdiv
-#if   __riscv_flen == 64
-  fld f0, 0(sp)
-  fld f1, 8(sp)
-  fld f2, 16(sp)
-  fld f3, 24(sp)
-  fld f4, 32(sp)
-  fld f5, 40(sp)
-  fld f6, 48(sp)
-  fld f7, 56(sp)
-  fld f28, 64(sp)
-  fld f29, 72(sp)
-  fld f30, 80(sp)
-  fld f31, 88(sp)
-  fld f10, 96(sp)
-  fld f11, 104(sp)
-  fld f12, 112(sp)
-  fld f13, 120(sp)
-  fld f14, 128(sp)
-  fld f15, 136(sp)
-  fld f16, 144(sp)
-  fld f17, 152(sp)
-  fld f8, 160(sp)
-  fld f9, 168(sp)
-  fld f18, 176(sp)
-  fld f19, 184(sp)
-  fld f20, 192(sp)
-  fld f21, 200(sp)
-  fld f22, 208(sp)
-  fld f23, 216(sp)
-  fld f24, 224(sp)
-  fld f25, 232(sp)
-  fld f26, 240(sp)
-  fld f27, 248(sp)
-  addi sp, sp, 256
-
-#endif
-#endif
-  ld x1, 0(sp)
-  ld t0, 8(sp)
-  ld t1, 16(sp)
-  ld t2, 24(sp)
-  ld t3, 32(sp)
-  ld t4, 40(sp)
-  ld t5, 48(sp)
-  ld t6, 56(sp)
-  ld s0, 64(sp)
-  ld s1, 72(sp)
-  ld s2, 80(sp)
-  ld s3, 88(sp)
-  ld s4, 96(sp)
-  ld s5, 104(sp)
-  ld s6, 112(sp)
-  ld s7, 120(sp)
-  ld s8, 128(sp)
-  ld s9, 136(sp)
-  ld s10, 144(sp)
-  ld s11, 152(sp)
-
-  addi sp, sp, 160
-
+  ld ra, 0(sp)
+  ld s0, 8(sp)
+  ld s1, 16(sp)
+  ld s2, 24(sp)
+  addi sp, sp, 32
 #endif
 
   ret

@@ -30,6 +30,9 @@
 #elif __aarch64__
   #include "../pie/pie-a64-field-decoder.h"
   #include "../pie/pie-a64-decoder.h"
+#elif __riscv
+  #include "../pie/pie-riscv-decoder.h"
+  #include "../pie/pie-riscv-field-decoder.h"
 #endif
 
 #ifdef __arm__
@@ -82,6 +85,77 @@ void _a64_is_load_or_store(mambo_context *ctx, bool *is_load, bool *is_store) {
       }
       break;
     }
+  }
+}
+#endif
+
+#ifdef __riscv
+void _riscv_is_load_or_store(mambo_context *ctx, bool *is_load, bool *is_store) {
+  *is_load = false;
+  *is_store = false;
+
+  switch(ctx->code.inst) {
+    case RISCV_C_FLD:
+    case RISCV_C_LW:
+    case RISCV_C_LD:
+    case RISCV_C_FLDSP:
+    case RISCV_C_LWSP:
+    case RISCV_C_FLWSP:
+    case RISCV_C_LDSP:
+    case RISCV_LB:
+    case RISCV_LH:
+    case RISCV_LW:
+    case RISCV_LBU:
+    case RISCV_LHU:
+    case RISCV_LWU:
+    case RISCV_LD:
+    case RISCV_LR_W:
+    case RISCV_LR_D:
+    case RISCV_FLW:
+    case RISCV_FLD:
+      *is_load = true;
+      break;
+
+    case RISCV_C_FSD:
+    case RISCV_C_SW:
+    case RISCV_C_SD:
+    case RISCV_C_FSDSP:
+    case RISCV_C_SWSP:
+    case RISCV_C_SDSP:
+    case RISCV_SB:
+    case RISCV_SH:
+    case RISCV_SW:
+    case RISCV_SD:
+    case RISCV_SC_W:
+    case RISCV_SC_D:
+    case RISCV_FSW:
+    case RISCV_FSD:
+      *is_store = true;
+      break;
+
+    case RISCV_AMOSWAP_W:
+    case RISCV_AMOADD_W:
+    case RISCV_AMOXOR_W:
+    case RISCV_AMOAND_W:
+    case RISCV_AMOOR_W:
+    case RISCV_AMOSWAP_D:
+    case RISCV_AMOADD_D:
+    case RISCV_AMOXOR_D:
+    case RISCV_AMOAND_D:
+    case RISCV_AMOOR_D:
+    case RISCV_AMOMIN_W:
+    case RISCV_AMOMAX_W:
+    case RISCV_AMOMINU_W:
+    case RISCV_AMOMAXU_W:
+    case RISCV_AMOMIN_D:
+    case RISCV_AMOMAX_D:
+    case RISCV_AMOMINU_D:
+    case RISCV_AMOMAXU_D: {
+      *is_load = true;
+      *is_store = true;
+      break;
+    }
+
   }
 }
 #endif
@@ -182,6 +256,10 @@ bool mambo_is_load(mambo_context *ctx) {
   bool is_load, is_store;
   _a64_is_load_or_store(ctx, &is_load, &is_store);
   return is_load;
+#elif __riscv
+  bool is_load, is_store;
+  _riscv_is_load_or_store(ctx, &is_load, &is_store);
+  return is_load;
 #endif
   return false;
 }
@@ -260,6 +338,10 @@ bool mambo_is_store(mambo_context *ctx) {
   bool is_load, is_store;
   _a64_is_load_or_store(ctx, &is_load, &is_store);
   return is_store;
+#elif __riscv
+  bool is_load, is_store;
+  _riscv_is_load_or_store(ctx, &is_load, &is_store);
+  return is_store;
 #endif
   return false;
 }
@@ -270,6 +352,10 @@ bool mambo_is_load_or_store(mambo_context *ctx) {
 #elif __aarch64__
   bool is_load, is_store;
   _a64_is_load_or_store(ctx, &is_load, &is_store);
+  return is_load || is_store;
+#elif __riscv
+  bool is_load, is_store;
+  _riscv_is_load_or_store(ctx, &is_load, &is_store);
   return is_load || is_store;
 #endif
 }
@@ -785,6 +871,15 @@ int _a64_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
 }
 #endif
 
+#ifdef __riscv
+int _riscv_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
+  switch(ctx->code.inst) {
+    
+  }
+  return 0;
+}
+#endif
+
 
 int mambo_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
 #ifdef __arm__
@@ -1189,6 +1284,78 @@ int _arm_get_ld_st_size(mambo_context *ctx) {
 }
 #endif
 
+#ifdef __riscv
+int _riscv_get_ld_st_size_bytes(mambo_context *ctx) {
+  int size = -1;
+
+  switch (ctx->code.inst) {
+    case RISCV_SB:
+    case RISCV_LB:
+    case RISCV_LBU:
+      size = 1;
+      break;
+
+    case RISCV_LH:
+    case RISCV_SH:
+    case RISCV_LHU:
+      size = 2;
+      break;
+
+    case RISCV_C_SW:
+    case RISCV_C_SWSP:
+    case RISCV_SW:
+    case RISCV_SC_W:
+    case RISCV_FSW:
+    case RISCV_C_LW:
+    case RISCV_C_FLWSP:
+    case RISCV_C_LWSP:
+    case RISCV_LW:
+    case RISCV_LR_W:
+    case RISCV_FLW:
+    case RISCV_AMOSWAP_W:
+    case RISCV_AMOADD_W:
+    case RISCV_AMOXOR_W:
+    case RISCV_AMOAND_W:
+    case RISCV_AMOOR_W:
+    case RISCV_AMOMIN_W:
+    case RISCV_AMOMAX_W:
+    case RISCV_AMOMINU_W:
+    case RISCV_AMOMAXU_W:
+      size = 4;
+      break;
+
+    case RISCV_C_FSD:
+    case RISCV_C_SD:
+    case RISCV_C_FSDSP:
+    case RISCV_C_SDSP:
+    case RISCV_SD:
+    case RISCV_SC_D:
+    case RISCV_FSD:
+    case RISCV_C_FLD:
+    case RISCV_C_LD:
+    case RISCV_C_FLDSP:
+    case RISCV_C_LDSP:
+    case RISCV_LD:
+    case RISCV_LR_D:
+    case RISCV_FLD:
+    case RISCV_AMOSWAP_D:
+    case RISCV_AMOADD_D:
+    case RISCV_AMOXOR_D:
+    case RISCV_AMOAND_D:
+    case RISCV_AMOOR_D:
+    case RISCV_AMOMIN_D:
+    case RISCV_AMOMAX_D:
+    case RISCV_AMOMINU_D:
+    case RISCV_AMOMAXU_D:
+      size = 8;
+      break;
+
+  return size;
+    
+  }
+}
+#endif
+
 int mambo_get_ld_st_size(mambo_context *ctx) {
 #ifdef __arm__
   if (ctx->code.inst_type == THUMB_INST) {
@@ -1198,6 +1365,8 @@ int mambo_get_ld_st_size(mambo_context *ctx) {
   }
 #elif __aarch64__
   return _a64_get_ld_st_size(ctx);
+#elif __riscv
+ return _riscv_get_ld_st_size_bytes(ctx);
 #endif
   return -1;
 }
