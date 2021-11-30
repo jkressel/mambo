@@ -874,6 +874,78 @@ int _a64_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
 #ifdef __riscv
 int _riscv_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
   switch(ctx->code.inst) {
+    case RISCV_LB:
+    case RISCV_LH:
+    case RISCV_LBU:
+    case RISCV_LHU:
+    case RISCV_LW:
+    case RISCV_LWU:
+    case RISCV_LD:
+    case RISCV_FLW:
+    case RISCV_FLD:
+      // I-type
+      break;
+    
+    case RISCV_SB:
+    case RISCV_SH:
+    case RISCV_SW:
+    case RISCV_SD:
+    case RISCV_FSW:
+    case RISCV_FSD:
+      // S-type
+      break;
+
+    case RISCV_AMOSWAP_W:
+    case RISCV_AMOADD_W:
+    case RISCV_AMOXOR_W:
+    case RISCV_AMOAND_W:
+    case RISCV_AMOOR_W:
+    case RISCV_AMOSWAP_D:
+    case RISCV_AMOADD_D:
+    case RISCV_AMOXOR_D:
+    case RISCV_AMOAND_D:
+    case RISCV_AMOOR_D:
+    case RISCV_AMOMIN_W:
+    case RISCV_AMOMAX_W:
+    case RISCV_AMOMINU_W:
+    case RISCV_AMOMAXU_W:
+    case RISCV_AMOMIN_D:
+    case RISCV_AMOMAX_D:
+    case RISCV_AMOMINU_D:
+    case RISCV_AMOMAXU_D:
+    case RISCV_LR_W:
+    case RISCV_LR_D:
+    case RISCV_SC_W:
+    case RISCV_SC_D:
+      // R-type
+      break;
+
+    case RISCV_C_LW:
+    case RISCV_C_LD:
+    case RISCV_C_FLW:
+    case RISCV_C_FLD:
+      //CL-Type
+      break;
+
+    case RISCV_C_SW:
+    case RISCV_C_SD:
+    case RISCV_C_FSW:
+    case RISCV_C_FSD:
+      //CS-type
+      break;
+
+    case RISCV_C_FLDSP:
+    case RISCV_C_LWSP:
+    case RISCV_C_FLWSP:
+    case RISCV_C_LDSP:
+      //CI-type
+      break;
+
+    case RISCV_C_FSDSP:
+    case RISCV_C_SWSP:
+    case RISCV_C_SDSP:
+      //CSS-type
+      break;
     
   }
   return 0;
