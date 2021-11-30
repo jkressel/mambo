@@ -414,6 +414,11 @@ void _generate_addr(mambo_context *ctx, int reg, int rn, int rm, int offset) {
 #endif
 }
 
+void _riscv_generate_addr(mambo_context *ctx, int reg, int rs1, int offset) {
+  
+
+}
+
 #ifdef __arm__
 int _thumb_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
   switch(ctx->code.inst) {
@@ -882,9 +887,12 @@ int _riscv_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
     case RISCV_LWU:
     case RISCV_LD:
     case RISCV_FLW:
-    case RISCV_FLD:
-      // I-type
+    case RISCV_FLD:  {
+      unsigned int rd, rs1, imm;
+      riscv_lb_decode_fields(ctx->code.read_address, &rd, &rs1, &imm);
+      emit_riscv_addi(ctx, reg, rs1, offset);
       break;
+    }
     
     case RISCV_SB:
     case RISCV_SH:
@@ -963,6 +971,8 @@ int mambo_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
   return -1;
 #elif __aarch64__
   return _a64_calc_ld_st_addr(ctx, reg);
+#elif __riscv
+  return _riscv_calc_ld_st_addr(ctx, reg);
 #endif
 }
 
