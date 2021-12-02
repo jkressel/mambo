@@ -890,7 +890,7 @@ int _riscv_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
     case RISCV_FLD:  {
       unsigned int rd, rs1, imm;
       riscv_lb_decode_fields(ctx->code.read_address, &rd, &rs1, &imm);
-      emit_riscv_addi(ctx, reg, rs1, offset);
+      emit_riscv_addi(ctx, reg, rs1, imm);
       break;
     }
     
@@ -930,14 +930,12 @@ int _riscv_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
 
     case RISCV_C_LW:
     case RISCV_C_LD:
-    case RISCV_C_FLW:
     case RISCV_C_FLD:
       //CL-Type
       break;
 
     case RISCV_C_SW:
     case RISCV_C_SD:
-    case RISCV_C_FSW:
     case RISCV_C_FSD:
       //CS-type
       break;
