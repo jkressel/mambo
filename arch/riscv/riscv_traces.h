@@ -1,0 +1,1 @@
+void create_trace_riscv(dbm_thread *thread_data, uint32_t bb_source, cc_addr_pair *ret_addr);
