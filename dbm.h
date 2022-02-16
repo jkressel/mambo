@@ -187,6 +187,10 @@ struct trace_exits {
 #ifdef __aarch64__
   int fragment_id;
 #endif
+#ifdef __riscv
+  int fragment_id;
+  uint32_t exit_condition;
+#endif
 };
 
 #ifdef __riscv
@@ -206,6 +210,7 @@ typedef struct {
   bool active;
   int free_exit_rec;
   struct trace_exits exits[MAX_TRACE_REC_EXITS];
+  int size;
 } trace_in_prog;
 
 enum dbm_thread_status {
