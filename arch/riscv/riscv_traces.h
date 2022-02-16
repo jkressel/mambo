@@ -1,1 +1,2 @@
-void create_trace_riscv(dbm_thread *thread_data, uint32_t bb_source, cc_addr_pair *ret_addr);
+void create_trace_riscv(dbm_thread *thread_data, uint16_t bb_source, uintptr_t *ret_addr);
+void trace_dispatcher_riscv(uintptr_t target, uintptr_t *next_addr, uint32_t source_index, dbm_thread *thread_data);

@@ -245,12 +245,25 @@ dispatcher_trampoline:
 dispatcher_addr: .quad dispatcher
 mambo_gp_addr: .quad mambo_gp
 
+
+ /* trace_head_incr stack
+   *
+   *     +--------+
+   *     | Stack  |
+   * sp->+--------+
+   *   0 |  a2    |
+   *   8 |  a3    |
+   *  16 |  a1    |
+   *  24 |  ra    |
+   *     +--------+
+   */
+
+#ifdef DBM_TRACES
 .global trace_head_incr
 trace_head_incr:
-  addi    sp, sp, -(3 * GP_REG_SIZE)
+  addi    sp, sp, -(2 * GP_REG_SIZE)
   STR     a2, 0 * GP_REG_SIZE(sp)
   STR     a3, 1 * GP_REG_SIZE(sp)
-  STR     ra, 2 * GP_REG_SIZE(sp)
 
   nop 
   nop 
@@ -262,7 +275,7 @@ trace_head_incr:
 
   add     a2, a2, a1
   lbu     a3, 0(a2)
-  addi    a3, a3, 1
+  addi    a3, a3, -1
   sb      a3, 0(a2)
   addi    a3, a3, -256
   beqz    a3, create_trace_trampoline
@@ -270,22 +283,24 @@ trace_head_incr:
 return_to_cc:
   LDR     a2, 0 * GP_REG_SIZE(sp)
   LDR     a3, 1 * GP_REG_SIZE(sp)
-  LDR     ra, 2 * GP_REG_SIZE(sp)
-  addi    sp, sp, (3 * GP_REG_SIZE)
+  addi    sp, sp, (2 * GP_REG_SIZE)
   ret     #TO-DO need checked-cc-return
 
 create_trace_trampoline:
 
-  addi    a2, sp, 7 * GP_REG_SIZE
+  addi    sp, sp, -(1 * GP_REG_SIZE)
+  addi    a2, sp, 0 * GP_REG_SIZE
 
   jal     ra, push_caller_saved_registers
   jal     ra, push_fp
   
-  addi    sp, sp, -4 * GP_REG_SIZE
+  addi    sp, sp, -3 * GP_REG_SIZE
   STR     s0, 0 * GP_REG_SIZE(sp)
   STR     s1, 1 * GP_REG_SIZE(sp)
   STR     s2, 2 * GP_REG_SIZE(sp)
-  STR     a0, 3 * GP_REG_SIZE(sp)
+
+  lla a4, create_trace_addr
+  ld  a4, (a4)
 
   lla a0, disp_thread_data
   ld  a0, (a0)
@@ -303,14 +318,26 @@ create_trace_trampoline:
   LDR     s0, 0 * GP_REG_SIZE(sp)
   LDR     s1, 1 * GP_REG_SIZE(sp)
   LDR     s2, 2 * GP_REG_SIZE(sp)
-  LDR     a0, 3 * GP_REG_SIZE(sp)
-  addi    sp, sp, 4 * GP_REG_SIZE
+  addi    sp, sp, (3 * GP_REG_SIZE)
 
   jal     ra, pop_fp
   jal     ra, pop_caller_saved_registers
 
-  j       return_to_cc
+  LDR     a0, 0 * GP_REG_SIZE(sp)
+  addi    sp, sp, (1 * GP_REG_SIZE)
 
+
+  LDR     ra, 2 * GP_REG_SIZE(sp)
+  LDR     a2, 0  * GP_REG_SIZE(sp)
+  LDR     a3, 1 * GP_REG_SIZE(sp)
+  addi    sp, sp, (3 * GP_REG_SIZE)
+  
+  jr a0
+
+create_trace_addr: .quad create_trace_riscv
+
+#endif
+  
 
 .global syscall_wrapper
 syscall_wrapper:

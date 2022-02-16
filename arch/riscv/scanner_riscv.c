@@ -385,12 +385,6 @@ int riscv_jal_helper(uint16_t **o_write_p, uintptr_t target, enum reg rd) {
   return 0;
 }
 
-void riscv_cc_jump(dbm_thread *thread_data, uint16_t *write_p, uintptr_t target) {
-  int ret = riscv_jal_helper(&write_p, target, x0);
-  assert(ret == 0);
-  record_cc_link(thread_data, (uintptr_t)write_p, target);
-}
-
 void riscv_go_to_dispatcher(dbm_thread *thread_data, uint16_t **o_write_p) {
   int ret = riscv_jalr_helper(o_write_p, thread_data->dispatcher_addr, zero, s1);
   assert(ret == 0);
@@ -637,6 +631,12 @@ void pass1_riscv(uint16_t *read_address, branch_type *bb_type) {
       case RISCV_BGEU:
         *bb_type = branch_riscv;
         break;
+      case RISCV_LR_W:
+      case RISCV_SC_W:
+      case RISCV_LR_D:
+      case RISCV_SC_D:
+        *bb_type = atomic_memory_riscv;
+        break;
       case RISCV_INVALID:
         return;
     }
@@ -756,12 +756,16 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
   branch_type bb_type;
   pass1_riscv(read_address, &bb_type);
 
-  if (type == mambo_bb && bb_type != jalr_riscv && bb_type != unknown) {
-    riscv_push(&write_p, 1 << ra | 1 << a1 | 1 << a4);
+  if (type == mambo_bb && bb_type != jalr_riscv && bb_type != atomic_memory_riscv && bb_type != unknown) {
+    riscv_push(&write_p, 1 << a0 | 1 << a1);
+    riscv_push(&write_p, 1 << ra);
     riscv_copy_to_reg(&write_p, a1, (int)basic_block);
-    riscv_copy_to_reg(&write_p, a4, (uintptr_t)&create_trace_riscv);
-    riscv_jal_helper(&write_p, thread_data->trace_head_incr_addr, ra);
-    riscv_pop(&write_p, 1 << ra | 1 << a1 | 1 << a4);
+    if (riscv_jal_helper(&write_p, thread_data->trace_head_incr_addr, ra) !=0) {
+      riscv_jalr_helper(&write_p, thread_data->trace_head_incr_addr, ra, a0);
+    }
+    riscv_pop(&write_p, 1 << ra);
+    riscv_pop(&write_p, 1 << a0 | 1 << a1);
+
   }
 #endif
 
