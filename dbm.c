@@ -90,6 +90,9 @@ void flush_code_cache(dbm_thread *thread_data) {
 #ifdef DBM_TRACES
     thread_data->exec_count[i] = 0;
 #endif
+#ifdef __riscv
+    thread_data->code_cache_meta[i].jump_trampoline_availability = 0;
+#endif
   }
 
   linked_list_init(thread_data->cc_links, MAX_CC_LINKS);

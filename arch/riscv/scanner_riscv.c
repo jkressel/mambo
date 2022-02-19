@@ -479,16 +479,13 @@ void riscv_cond_branch(dbm_thread *thread_data, uint16_t *read_address,
   *o_write_p = write_p;
 }
 
-bool riscv_scanner_deliver_callbacks(dbm_thread *thread_data, mambo_cb_idx cb_id,
-                                     uint16_t **o_read_address, riscv_instruction inst,
-                                     uint16_t **o_write_p, uint32_t **o_data_p,
-                                     int const basic_block, cc_type type,
-                                     bool allow_write, bool *stop) {
-#ifdef PLUGINS_NEW
-    // TODO: (riscv) PLUGINS_NEW
-    #error "PLUGINS not implemented"
-#endif
-  return false;
+void check_and_set_jump_trampoline_suitability(dbm_thread *thread_data, uint16_t **write_p,
+                          uint32_t **data_p, uint32_t size, int cur_block) {
+
+  // if ((((uint64_t)*write_p) + size) < (uint64_t)*data_p) {
+  //   thread_data->code_cache_meta[cur_block].jump_trampoline_start = *write_p;
+  //   thread_data->code_cache_meta[cur_block].jump_trampoline_availability = 0xFF;
+  // }
 }
 
 void riscv_check_free_space(dbm_thread *thread_data, uint16_t **write_p,
@@ -923,6 +920,8 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
                                 &write_p, &data_p, basic_block, type, false, &stop);
   riscv_scanner_deliver_callbacks(thread_data, POST_FRAGMENT_C, &start_scan, -1,
                                 &write_p, &data_p, basic_block, type, false, &stop);
+
+  check_and_set_jump_trampoline_suitability(thread_data, &write_p, &data_p, 8, basic_block);
 
   return write_p - start_address;
 }

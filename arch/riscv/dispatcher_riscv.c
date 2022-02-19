@@ -78,11 +78,114 @@
          JALR zero, a0, translation fallthrough offset from a0
 */
 
+<<<<<<< HEAD
 int riscv_link_to(uint16_t **o_write_p, uintptr_t target) {
   int ret = riscv_jal_helper(o_write_p, target+6, zero);
   if (ret != 0) {
     riscv_push(o_write_p, (1 << a0) | (1 << a1));
     ret = riscv_jalr_helper(o_write_p, target, zero, a0);
+=======
+intptr_t increase_or_decrease_addr(intptr_t offset) {
+  if (offset > 0) {
+    return ((1024 * 1024) - (256*6));
+  } else {
+    return -((1024 * 1024) - (256*6));
+  }
+}
+
+int find_basic_block(dbm_thread *thread_data, uintptr_t target, intptr_t offset) {
+  int current_bb = 0;
+  //refactor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  if (offset > 0) {
+    current_bb = addr_to_bb_id(thread_data, target - increase_or_decrease_addr(offset));
+  } else {
+    current_bb = addr_to_bb_id(thread_data, target - increase_or_decrease_addr(offset));
+  }
+  for (int i = 0; i < 6; i++) {
+    if (thread_data->code_cache_meta[current_bb].jump_trampoline_availability & 0xFF != 0) {
+      return current_bb;
+    } else {
+      if (offset > 0) {
+        current_bb++;
+      } else {
+        current_bb--;
+      }
+    }
+  }
+  return -1;
+}
+
+int first_free_trampoline_spot(dbm_thread *thread_data, int bb) {
+  int free_spot = 0;
+  uint8_t value = thread_data->code_cache_meta[bb].jump_trampoline_availability;
+  for (int i = 0; i < 8; i++) {
+    if ((value >> 0) & 0x1) {
+      free_spot = i;
+      break;
+    }
+  }
+  return free_spot;
+}
+
+int riscv_link_to(dbm_thread *thread_data, uint16_t **o_write_p, uintptr_t target) {
+  uint16_t *write_p = *o_write_p;
+  intptr_t offset = target - (intptr_t)*o_write_p;
+  int ret = riscv_jal_helper(&write_p, target+6, zero);
+   if (ret != 0) {
+    if (abs(offset) < ((1024 * 1024 * 2) - 1024 * 6) && target < thread_data->code_cache->traces) {
+      intptr_t remaining_offset = offset;
+      uintptr_t current_target = target + 6;
+      int current_bb = 0;
+      while (abs(current_target - (intptr_t)write_p) > (1024 * 1024) - (256 * 12)) {
+        current_bb = find_basic_block(thread_data, current_target, offset);
+        if (current_bb == -1) {
+          ret = -1;
+          break;
+        } else {
+          uint16_t *trampoline_start = thread_data->code_cache_meta[current_bb].jump_trampoline_start;
+          int free_spot = first_free_trampoline_spot(thread_data, current_bb);
+          trampoline_start += 2*free_spot;
+          if (abs(current_target - (intptr_t)trampoline_start) > (1024*1024)) {
+            fprintf(stderr, "OH NOOOOOOOoO %llu\n", abs(current_target - (intptr_t)trampoline_start));
+            while(1);
+          }
+          assert(riscv_jal_helper(&trampoline_start, current_target, zero) == 0);
+          current_target = trampoline_start-2;
+          thread_data->code_cache_meta[current_bb].jump_trampoline_availability ^= (1 << free_spot);
+          remaining_offset -= (target - current_target);
+          ret = 1;
+        }
+      }
+      
+      if (ret != -1) {
+         if (abs(current_target-(intptr_t)write_p) > (1024*1024)) {
+            fprintf(stderr, "OHhhhh %lld, %lld\n", current_target-(intptr_t)write_p, remaining_offset);
+            while(1);
+          }
+      assert(riscv_jal_helper(&write_p, current_target, zero) == 0);
+
+#ifdef DBM_TRACES
+    for (int i = 0; i < 4; i++) {
+      riscv_addi(&write_p, zero, zero, 0); // NOP
+      write_p += 2;
+    }
+#endif
+    ret = 0;
+      }
+
+    }
+    if (ret != 0) {
+      riscv_push(&write_p, (1 << a0) | (1 << a1));
+      ret = riscv_jalr_helper(&write_p, target, zero, a0);
+    }
+  } else {
+#ifdef DBM_TRACES
+    for (int i = 0; i < 4; i++) {
+      riscv_addi(&write_p, zero, zero, 0); // NOP
+      write_p += 2;
+    }
+#endif
+>>>>>>> c2aa790... Jump Trampolining - VERY EARLY VERSION
   }
   return ret;
 }

@@ -41,7 +41,7 @@
 // BASIC_BLOCK_SIZE should be a power of 2
 #define BASIC_BLOCK_SIZE 64
 #ifdef DBM_TRACES
-  #define CODE_CACHE_SIZE 55000
+  #define CODE_CACHE_SIZE 30000
 #else
   #define CODE_CACHE_SIZE 65000
 #endif
@@ -163,6 +163,8 @@ typedef struct {
   uintptr_t branch_cache_status : 3;
   uintptr_t rs1 : 6;
   uintptr_t rs2 : 6;
+  uint16_t *jump_trampoline_start;
+  uint8_t jump_trampoline_availability;
 #endif
   uint32_t free_b;
   ll_entry *linked_from;
