@@ -27,8 +27,11 @@
 #include "scanner_common.h"
 #include "../../api/helpers.h"
 
+#include "../../api/helpers.h"
+#include "riscv_traces.h"
+
 #define MIN_FSPACE 56
-#define BRANCH_FSPACE 112
+#define BRANCH_FSPACE 136
 
 //#define DEBUG
 #ifdef DEBUG
@@ -524,6 +527,51 @@ void riscv_check_free_space(dbm_thread *thread_data, uint16_t **write_p,
   }
 }
 
+void pass1_riscv(uint16_t *read_address, branch_type *bb_type) {
+  *bb_type = unknown;
+
+  while(*bb_type == unknown) {
+    riscv_instruction instruction = riscv_decode(read_address);
+
+    switch(instruction) {
+      case RISCV_C_JAL:
+      case RISCV_C_J:
+      case RISCV_JAL:
+        *bb_type = jal_riscv;
+        break;
+      case RISCV_C_JR:
+      case RISCV_C_JALR:
+      case RISCV_JALR:
+        *bb_type = jalr_riscv;
+        break;
+      case RISCV_C_BEQZ:
+      case RISCV_C_BNEZ:
+      case RISCV_BEQ:
+      case RISCV_BNE:
+      case RISCV_BLT:
+      case RISCV_BGE:
+      case RISCV_BLTU:
+      case RISCV_BGEU:
+        *bb_type = branch_riscv;
+        break;
+      case RISCV_LR_W:
+      case RISCV_SC_W:
+      case RISCV_LR_D:
+      case RISCV_SC_D:
+        *bb_type = atomic_memory_riscv;
+        break;
+      case RISCV_INVALID:
+        return;
+    }
+
+    if (instruction < RISCV_LUI) {
+      read_address++;
+    } else {
+      read_address += 2;
+    }
+  }
+}
+
 bool riscv_scanner_deliver_callbacks(dbm_thread *thread_data, mambo_cb_idx cb_id,
                                      uint16_t **o_read_address, riscv_instruction inst,
                                      uint16_t **o_write_p, uint32_t **o_data_p,
@@ -628,8 +676,20 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
   }
 
 #ifdef DBM_TRACES
-  // TODO: (riscv)
-  #error "Risc-V Traces not implemented"
+  branch_type bb_type;
+  pass1_riscv(read_address, &bb_type);
+
+  if (type == mambo_bb && bb_type != jalr_riscv && bb_type != atomic_memory_riscv && bb_type != unknown) {
+    riscv_push(&write_p, 1 << a0 | 1 << a1);
+    riscv_push(&write_p, 1 << ra);
+    riscv_copy_to_reg(&write_p, a1, (int)basic_block);
+    if (riscv_jal_helper(&write_p, thread_data->trace_head_incr_addr, ra) !=0) {
+      riscv_jalr_helper(&write_p, thread_data->trace_head_incr_addr, ra, a0);
+    }
+    riscv_pop(&write_p, 1 << ra);
+    riscv_pop(&write_p, 1 << a0 | 1 << a1);
+
+  }
 #endif
 
     riscv_scanner_deliver_callbacks(thread_data, PRE_FRAGMENT_C, &read_address, -1,

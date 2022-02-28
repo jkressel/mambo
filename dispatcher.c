@@ -29,6 +29,8 @@
 #include "pie/pie-arm-encoder.h"
 #elif __aarch64__
 #include "pie/pie-a64-encoder.h"
+#elif __riscv
+#include "arch/riscv/riscv_traces.h"
 #endif
 
 #ifdef DEBUG
@@ -65,8 +67,12 @@ void dispatcher(uintptr_t target, uint32_t source_index, uintptr_t *next_addr, d
 #ifdef __arm__
     if (source_branch_type != tbb && source_branch_type != tbh)
 #endif
+#ifndef __riscv
       return trace_dispatcher(target, next_addr, source_index, thread_data);
+#else
+    return trace_dispatcher_riscv(target, next_addr, source_index, thread_data);
   }
+#endif
 #endif
 
   debug("Reached the dispatcher, target: 0x%x, ret: %p, src: %d thr: %p\n", target, next_addr, source_index, thread_data);

@@ -18,7 +18,7 @@ OPTS+=-DDBM_LINK_TBZ
 OPTS+=-DDBM_TB_DIRECT #-DFAST_BT
 OPTS+=-DLINK_BX_ALT
 OPTS+=-DDBM_INLINE_HASH
-#OPTS+=-DDBM_TRACES #-DTB_AS_TRACE_HEAD #-DBLXI_AS_TRACE_HEAD
+OPTS+=-DDBM_TRACES #-DTB_AS_TRACE_HEAD #-DBLXI_AS_TRACE_HEAD
 #OPTS+=-DCC_HUGETLB -DMETADATA_HUGETLB
 
 CFLAGS+=-D_GNU_SOURCE -g -std=gnu99 -O2
@@ -28,7 +28,7 @@ LDFLAGS+=-static -ldl
 LIBS=-lelf -lpthread -lz
 HEADERS=*.h makefile
 INCLUDES=-I/usr/include/libelf -I.
-SOURCES= common.c dbm.c traces.c syscalls.c dispatcher.c util.S #signals.c
+SOURCES= common.c dbm.c traces.c syscalls.c dispatcher.c util.S traces_common.c #signals.c
 SOURCES+=api/helpers.c api/plugin_support.c api/branch_decoder_support.c api/load_store.c api/internal.c api/hash_table.c
 SOURCES+=elf/elf_loader.o elf/symbol_parser.o
 
@@ -59,6 +59,7 @@ ifeq ($(ARCH), riscv64)
 	PIE += pie/pie-riscv-decoder.o
 	SOURCES += arch/riscv/dispatcher_riscv.S arch/riscv/dispatcher_riscv.c
 	SOURCES += arch/riscv/scanner_riscv.c
+	SOURCES += arch/riscv/riscv_traces.c
 	SOURCES += api/emit_riscv.c
 endif
 

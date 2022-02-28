@@ -96,6 +96,10 @@ int riscv_branch_helper(uint16_t **o_write_p, uintptr_t target, int const rs1,
                         int const rs2, enum branch_condition const condition);
 int riscv_jalr_helper(uint16_t **o_write_p, uintptr_t target, enum reg rd, enum reg rs1);
 int riscv_jal_helper(uint16_t **o_write_p, uintptr_t target, enum reg rd);
+intptr_t riscv_decode_b_imm(uint32_t immhi, uint32_t immlo);
+intptr_t riscv_decode_cb_offset(uint32_t immhi, uint32_t immlo);
+void riscv_go_to_dispatcher(dbm_thread *thread_data, uint16_t **o_write_p);
+void riscv_save_context(uint16_t **o_write_p);
 #endif
 
 extern void inline_hash_lookup();

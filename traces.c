@@ -28,6 +28,7 @@
 #include "dbm.h"
 #include "common.h"
 #include "scanner_common.h"
+#include "traces_common.h"
 
 #ifdef __arm__
 #include "pie/pie-thumb-decoder.h"
@@ -53,30 +54,9 @@
   #define debug(...)
 #endif
 
+#if defined __arm__ || __aarch64__
+
 #ifdef DBM_TRACES
-uintptr_t get_active_trace_spc(dbm_thread *thread_data) {
-  int bb_id = thread_data->active_trace.source_bb;
-  return (uintptr_t)thread_data->code_cache_meta[bb_id].source_addr;
-}
-
-uintptr_t active_trace_lookup(dbm_thread *thread_data, uintptr_t target) {
-  uintptr_t spc = get_active_trace_spc(thread_data);
-  if (target == spc) {
-    return adjust_cc_entry(thread_data->active_trace.entry_addr);
-  }
-  uintptr_t return_tpc = hash_lookup(&thread_data->entry_address, target);
-  if (return_tpc >= (uintptr_t)thread_data->code_cache->traces)
-    return adjust_cc_entry(return_tpc);
-  return UINT_MAX;
-}
-
-uintptr_t active_trace_lookup_or_scan(dbm_thread *thread_data, uintptr_t target) {
-  uintptr_t spc = get_active_trace_spc(thread_data);
-  if (target == spc) {
-    return adjust_cc_entry(thread_data->active_trace.entry_addr);
-  }
-  return lookup_or_scan(thread_data, target, NULL);
-}
 
 uintptr_t active_trace_lookup_or_stub(dbm_thread *thread_data, uintptr_t target) {
   uintptr_t spc = get_active_trace_spc(thread_data);
@@ -84,12 +64,6 @@ uintptr_t active_trace_lookup_or_stub(dbm_thread *thread_data, uintptr_t target)
     return adjust_cc_entry(thread_data->active_trace.entry_addr);
   }
   return lookup_or_stub(thread_data, target);
-}
-
-int allocate_trace_fragment(dbm_thread *thread_data) {
-  int id = thread_data->active_trace.id++;
-  assert(id < (CODE_CACHE_SIZE + TRACE_FRAGMENT_NO));
-  return id;
 }
 
 uint32_t scan_trace(dbm_thread *thread_data, void *address, cc_type type, int *set_trace_id) {
@@ -797,3 +771,4 @@ void trace_dispatcher(uintptr_t target, uintptr_t *next_addr, uint32_t source_in
 #endif
 #endif // DBM_TRACES
 }
+#endif
