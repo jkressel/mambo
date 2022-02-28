@@ -53,6 +53,8 @@
   #define debug(...)
 #endif
 
+#if defined __arm__ || __aarch64__
+
 #ifdef DBM_TRACES
 uintptr_t get_active_trace_spc(dbm_thread *thread_data) {
   int bb_id = thread_data->active_trace.source_bb;
@@ -797,3 +799,4 @@ void trace_dispatcher(uintptr_t target, uintptr_t *next_addr, uint32_t source_in
 #endif
 #endif // DBM_TRACES
 }
+#endif
