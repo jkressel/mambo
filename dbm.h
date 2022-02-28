@@ -126,6 +126,7 @@ typedef enum {
   jal_riscv,
   jalr_riscv,
   branch_riscv,
+  atomic_memory_riscv, //TODO maybe shouldn't have this here?
 #endif
 } branch_type;
 
@@ -230,7 +231,12 @@ struct dbm_thread_s {
   dbm_code_cache_meta code_cache_meta[CODE_CACHE_SIZE + TRACE_FRAGMENT_NO];
   hash_table entry_address;
 #ifdef DBM_TRACES
+#ifdef __riscv
   uint8_t   exec_count[CODE_CACHE_SIZE];
+#else
+  uint8_t   exec_count[CODE_CACHE_SIZE];
+#endif
+
   uintptr_t trace_head_incr_addr;
   uint8_t  *trace_cache_next;
   int       trace_id;
