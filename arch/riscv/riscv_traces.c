@@ -65,6 +65,15 @@ int riscv_jump_to(uint16_t **o_write_p, uintptr_t target) {
   return ret;
 }
 
+int riscv_tribi_jump_to(uint16_t **o_write_p, uintptr_t target) {
+  int ret = riscv_jal_helper((uint16_t **)o_write_p, target, zero);
+  if (ret != 0) {
+    riscv_push(o_write_p, (1 << a0) | (1 << a1));
+    ret = riscv_jalr_helper((uint16_t **)o_write_p, target, zero, a0);
+  }
+  return ret;
+}
+
 uintptr_t get_active_trace_spc(dbm_thread *thread_data) {
   int bb_id = thread_data->active_trace.source_bb;
   return (uintptr_t)thread_data->code_cache_meta[bb_id].source_addr;
@@ -237,7 +246,7 @@ size_t scan_trace(dbm_thread *thread_data, uint16_t *address, cc_type type, int 
 
     fragment_len = scan_riscv(thread_data, address, trace_id, type, (uint16_t *)write_p);
 
-    if (write_p - (uint8_t *)thread_data->active_trace.entry_addr >= BRANCH_IMM_SIZE - TRACE_EXIT_BLOCK_SIZE) {
+    if (write_p - (uint8_t *)thread_data->active_trace.entry_addr >= 3000) {
       fprintf(stderr, "%d\n", write_p - (uint8_t *)thread_data->active_trace.entry_addr);
       return 0;
     }
@@ -323,6 +332,35 @@ void create_trace_riscv(dbm_thread *thread_data, uint16_t bb_source, uintptr_t *
   }
 }
 
+void insert_tribi_prediction(dbm_thread *thread_data, uint32_t source_index, uintptr_t target) {
+  dbm_code_cache_meta *bb_meta = &thread_data->code_cache_meta[source_index];
+  int number_of_predictions = bb_meta->number_of_predictions;
+  if (number_of_predictions < TRIBI_SLOTS){
+    uint16_t *slot = (uint16_t *)bb_meta->next_prediction_slot;
+    uint16_t *write_p = slot;
+    uint16_t *branch;
+    enum reg rs2 = bb_meta->rs1 == a0 ? a1 : a0;
+    riscv_copy_to_reg(&write_p, rs2, target);
+    branch = write_p;
+    write_p += 2;
+    uintptr_t tpc = active_trace_lookup(thread_data, target);
+    assert(riscv_tribi_jump_to(&write_p, tpc) == 0);
+    bb_meta->next_prediction_slot = (uintptr_t *)write_p;
+    bb_meta->number_of_predictions++;
+    riscv_branch_helper(&branch, (uintptr_t)write_p, bb_meta->rs1, rs2, BNE);
+    riscv_jal_helper(&write_p, (uintptr_t)bb_meta->ihlu_address, zero);
+    __clear_cache(slot, write_p);
+  } else {
+    uint16_t *eba = bb_meta->exit_branch_addr;
+    if (bb_meta->rd != zero) {
+      assert(bb_meta->rd != s1 && bb_meta->rd != a0 && bb_meta->rd != a1 && bb_meta->rs1 != bb_meta->rd);
+      riscv_copy_to_reg(&eba, bb_meta->rd, (uintptr_t)bb_meta->read_addr + ((bb_meta->inst >= RISCV_LUI) ? 4 : 2));
+    }
+    riscv_inline_hash_lookup(thread_data, source_index, &eba, (uint16_t *)bb_meta->branch_skipped_addr, bb_meta->rs1, bb_meta->imm, bb_meta->link, true, false);
+    __clear_cache(bb_meta->exit_branch_addr, eba);
+  }
+}
+
 void trace_dispatcher_riscv(uintptr_t target, uintptr_t *next_addr, uint32_t source_index, dbm_thread *thread_data) {
   uintptr_t addr;
   uintptr_t start_addr;
@@ -344,9 +382,15 @@ void trace_dispatcher_riscv(uintptr_t target, uintptr_t *next_addr, uint32_t sou
     case jal_riscv:
       bb_meta->branch_cache_status = BRANCH_LINKED;
       break;
-    case jalr_riscv:
+    case jalr_riscv: {
       *next_addr = lookup_or_scan(thread_data, target, NULL);
+#ifdef DBM_TRIBI
+      if (*next_addr >= thread_data->code_cache->traces) {
+        insert_tribi_prediction(thread_data, source_index, target);
+      }
+#endif
       return;
+    }
     default:
       fprintf(stderr, "Trace dispatcher unknown %p\n", write_p);
       while(1);
