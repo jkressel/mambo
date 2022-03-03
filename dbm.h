@@ -171,6 +171,16 @@ typedef struct {
   uint32_t free_b;
   ll_entry *linked_from;
   uint8_t saved_exit[MAX_SAVED_EXIT_SZ];
+#if defined DBM_TRACES && DBM_TRIBI
+  uintptr_t *next_prediction_slot;
+  uintptr_t *ihlu_address;
+  int number_of_predictions;
+#endif
+  bool link;
+  uint32_t imm;
+  uint32_t rd;
+  int inst;
+  uint16_t *read_addr;
 } dbm_code_cache_meta;
 
 typedef struct {
@@ -241,7 +251,6 @@ struct dbm_thread_s {
 #else
   uint8_t   exec_count[CODE_CACHE_SIZE];
 #endif
-
   uintptr_t trace_head_incr_addr;
   uint8_t  *trace_cache_next;
   int       trace_id;
