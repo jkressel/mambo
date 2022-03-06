@@ -34,7 +34,7 @@
 #define BRANCH_FSPACE 112
 
 #ifdef DBM_TRIBI
-#define PREDICTION_FSPACE 32
+#define PREDICTION_FSPACE 36
 #endif
 
 //#define DEBUG
@@ -515,6 +515,10 @@ void riscv_inline_hash_lookup(dbm_thread *thread_data, int basic_block, uint16_t
   if (use_a2)
     riscv_pop(&write_p, 1 << a2);
 
+  if (thread_data->code_cache_meta[basic_block].rd != zero) {
+    riscv_copy_to_reg(&write_p, thread_data->code_cache_meta[basic_block].rd, (uintptr_t)read_address + ((thread_data->code_cache_meta[basic_block].inst >= RISCV_LUI) ? 4 : 2));
+  }
+
   riscv_c_jr(&write_p, a0);
   write_p++;
 
@@ -528,6 +532,9 @@ void riscv_inline_hash_lookup(dbm_thread *thread_data, int basic_block, uint16_t
 
   riscv_add(&write_p, a0, reg_spc, zero);
   write_p += 2;
+  if (thread_data->code_cache_meta[basic_block].rd != zero) {
+    riscv_copy_to_reg(&write_p, thread_data->code_cache_meta[basic_block].rd, (uintptr_t)read_address + ((thread_data->code_cache_meta[basic_block].inst >= RISCV_LUI) ? 4 : 2));
+  }
   riscv_copy_to_reg(&write_p, a1, basic_block);
 
   if (use_a2)
@@ -575,6 +582,9 @@ void riscv_jump_register(dbm_thread *thread_data, uint16_t *read_address,
 
   thread_data->code_cache_meta[basic_block].exit_branch_type = jalr_riscv;
   thread_data->code_cache_meta[basic_block].exit_branch_addr = write_p;
+  thread_data->code_cache_meta[basic_block].rd = rd;
+  thread_data->code_cache_meta[basic_block].read_addr = read_address;
+  thread_data->code_cache_meta[basic_block].inst = inst;
 
 #ifndef DBM_INLINE_HASH
   riscv_save_context(&write_p);
@@ -588,14 +598,10 @@ void riscv_jump_register(dbm_thread *thread_data, uint16_t *read_address,
   riscv_go_to_dispatcher(thread_data, &write_p);
 #else
   if (rd != zero) {
-    assert(rd != s1 && rd != a0 && rd != a1 && rs1 != rd);
-    riscv_copy_to_reg(&write_p, rd, (uintptr_t)read_address + ((inst >= RISCV_LUI) ? 4 : 2));
+    assert(rd != s1 && rd != a0 && rd != a1);
   }
 #if defined DBM_TRACES && DBM_TRIBI
   if (basic_block >= CODE_CACHE_SIZE) {
-    thread_data->code_cache_meta[basic_block].rd = rd;
-    thread_data->code_cache_meta[basic_block].read_addr = read_address;
-    thread_data->code_cache_meta[basic_block].inst = inst;
     insert_tribi_header(thread_data, basic_block, read_address, &write_p, rs1, imm, rd == ra);
     *o_write_p = write_p;
     return;

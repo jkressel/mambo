@@ -175,12 +175,12 @@ typedef struct {
   uintptr_t *next_prediction_slot;
   uintptr_t *ihlu_address;
   int number_of_predictions;
+#endif
   bool link;
   uint32_t imm;
   uint32_t rd;
   int inst;
   uint16_t *read_addr;
-#endif
 } dbm_code_cache_meta;
 
 typedef struct {

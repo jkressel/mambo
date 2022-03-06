@@ -343,6 +343,10 @@ void insert_tribi_prediction(dbm_thread *thread_data, uint32_t source_index, uin
     riscv_copy_to_reg(&write_p, rs2, target);
     branch = write_p;
     write_p += 2;
+    if (bb_meta->rd != zero) {
+      assert(bb_meta->rd != s1 && bb_meta->rd != a0 && bb_meta->rd != a1);
+      riscv_copy_to_reg(&write_p, bb_meta->rd, (uintptr_t)bb_meta->read_addr + ((bb_meta->inst >= RISCV_LUI) ? 4 : 2));
+    }
     uintptr_t tpc = active_trace_lookup(thread_data, target);
     assert(riscv_tribi_jump_to(&write_p, tpc) == 0);
     bb_meta->next_prediction_slot = (uintptr_t *)write_p;
@@ -353,8 +357,7 @@ void insert_tribi_prediction(dbm_thread *thread_data, uint32_t source_index, uin
   } else {
     uint16_t *eba = bb_meta->exit_branch_addr;
     if (bb_meta->rd != zero) {
-      assert(bb_meta->rd != s1 && bb_meta->rd != a0 && bb_meta->rd != a1 && bb_meta->rs1 != bb_meta->rd);
-      riscv_copy_to_reg(&eba, bb_meta->rd, (uintptr_t)bb_meta->read_addr + ((bb_meta->inst >= RISCV_LUI) ? 4 : 2));
+      assert(bb_meta->rd != s1 && bb_meta->rd != a0 && bb_meta->rd != a1);
     }
     riscv_inline_hash_lookup(thread_data, source_index, &eba, (uint16_t *)bb_meta->branch_skipped_addr, bb_meta->rs1, bb_meta->imm, bb_meta->link, true, false);
     __clear_cache(bb_meta->exit_branch_addr, eba);
