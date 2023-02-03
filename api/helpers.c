@@ -847,7 +847,7 @@ int emit_indirect_branch_by_spc(mambo_context *ctx, enum reg reg) {
       assert(0);
   }
 #elif __riscv
-  riscv_inline_hash_lookup(current_thread, 0, (uint16_t **)&ctx->code.write_p, (uint16_t *)ctx->code.read_address, reg, 0, true, false, false);
+  riscv_inline_hash_lookup(current_thread, 0, (uint16_t **)&ctx->code.write_p, (uint16_t *)ctx->code.read_address, reg, 0, false, zero, 0);
 #endif
 }
 #endif
