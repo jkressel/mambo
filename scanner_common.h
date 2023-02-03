@@ -88,6 +88,7 @@ void a64_inline_hash_lookup(dbm_thread *thread_data, int basic_block, uint32_t *
 #endif
 
 #ifdef __riscv
+#include "pie/pie-riscv-decoder.h"
 int riscv_c_beqz_helper(uint16_t **o_write_p, uintptr_t const target, int const rs1);
 int riscv_c_bnez_helper(uint16_t **o_write_p, uintptr_t const target, int const rs1);
 int riscv_branch_helper(uint16_t **o_write_p, uintptr_t target, int const rs1,
