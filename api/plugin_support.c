@@ -27,6 +27,10 @@
 #include "../common.h"
 #include "helpers.h"
 
+#ifdef __riscv
+#include "pie/pie-riscv-decoder.h"
+#endif
+
 #ifdef PLUGINS_NEW
 
 /* Plugin management */
