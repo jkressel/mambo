@@ -404,7 +404,9 @@ int mambo_add_identity_mapping(mambo_context *ctx) {
 
   uintptr_t addr = (uintptr_t)mambo_get_cc_addr(ctx);
   if (ctx->code.inst_type == THUMB_INST) {
+#ifdef __arm__
     addr |= THUMB;
+#endif
   }
 
   int ret = hash_add(&current_thread->entry_address, addr, addr);
