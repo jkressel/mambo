@@ -832,6 +832,9 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
   uint16_t *start_scan = read_address;
   uint16_t *bb_entry = read_address;
 
+  branch_type riscv_bb_type;
+  pass1_riscv(read_address, &riscv_bb_type);
+
   if (write_p == NULL) {
     write_p = (uint16_t *)&thread_data->code_cache->blocks[basic_block];
   }
@@ -855,11 +858,13 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
 #ifdef DBM_TRACES
 #endif
 
+  if (riscv_bb_type != atomic_memory_riscv) {
     riscv_scanner_deliver_callbacks(thread_data, PRE_FRAGMENT_C, &read_address, -1,
-                                &write_p, &data_p, basic_block, type, true, &stop);
+                                  &write_p, &data_p, basic_block, type, true, &stop);
 
     riscv_scanner_deliver_callbacks(thread_data, PRE_BB_C, &read_address, -1,
-                                &write_p, &data_p, basic_block, type, true, &stop);
+                                  &write_p, &data_p, basic_block, type, true, &stop);
+  }
 
   while (!stop) {
     debug("Risc-V scan read_address: %p, w: : %p, bb: %d\n", read_address, write_p, basic_block);
@@ -868,8 +873,11 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
     debug("  instruction word: 0x%x\n", *read_address);
 
 #ifdef PLUGINS_NEW
-    bool skip_inst = riscv_scanner_deliver_callbacks(thread_data, PRE_INST_C, &read_address, inst,
+    bool skip_inst = false;
+    if (riscv_bb_type != atomic_memory_riscv) {
+      skip_inst = riscv_scanner_deliver_callbacks(thread_data, PRE_INST_C, &read_address, inst,
                                                    &write_p, &data_p, basic_block, type, true, &stop);
+    }
     if (!skip_inst) {
 #endif
       switch (inst) {
@@ -1228,7 +1236,9 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
       riscv_check_free_space(thread_data, &write_p, &data_p, MIN_FSPACE, basic_block);
     }
 
-    riscv_scanner_deliver_callbacks(thread_data, POST_INST_C, &read_address, inst, &write_p, &data_p, basic_block, type, !stop, &stop);
+    if (riscv_bb_type != atomic_memory_riscv) {
+      riscv_scanner_deliver_callbacks(thread_data, POST_INST_C, &read_address, inst, &write_p, &data_p, basic_block, type, !stop, &stop);
+    }
 
     if (inst < RISCV_LUI) {
       read_address++;
@@ -1236,11 +1246,12 @@ size_t scan_riscv(dbm_thread *thread_data, uint16_t *read_address,
       read_address += 2;
     }
   } // while (!stop)
-
-  riscv_scanner_deliver_callbacks(thread_data, POST_BB_C, &bb_entry, -1,
-                                &write_p, &data_p, basic_block, type, false, &stop);
-  riscv_scanner_deliver_callbacks(thread_data, POST_FRAGMENT_C, &start_scan, -1,
-                                &write_p, &data_p, basic_block, type, false, &stop);
+  if (riscv_bb_type != atomic_memory_riscv) {
+    riscv_scanner_deliver_callbacks(thread_data, POST_BB_C, &bb_entry, -1,
+                                  &write_p, &data_p, basic_block, type, false, &stop);
+    riscv_scanner_deliver_callbacks(thread_data, POST_FRAGMENT_C, &start_scan, -1,
+                                  &write_p, &data_p, basic_block, type, false, &stop);
+  }
 
   return write_p - start_address;
 }
