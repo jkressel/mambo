@@ -239,7 +239,7 @@ mambo_branch_type __get_riscv_branch_type(mambo_context *ctx) {
       type = BRANCH_DIRECT | RISCV_JUMP | BRANCH_CALL;
       break;
 
-    case RISCV_C_JR {
+    case RISCV_C_JR: {
       unsigned int rs1;
       riscv_c_jr_decode_fields(ctx->code.read_address, &rs1);
       type = BRANCH_INDIRECT | RISCV_JUMP;
