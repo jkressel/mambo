@@ -212,7 +212,8 @@ enum gp_reg_abi_name {
 };
 
 enum gp_reg_abi_name_alt {
-  fp   =   x8    // Frame Pointer
+  fp   =   x8,    // Frame Pointer
+  lr   =   ra,
 };
 
 #ifdef __riscv_fdiv
