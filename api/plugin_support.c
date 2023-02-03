@@ -119,6 +119,8 @@ int mambo_register_function_cb(mambo_context *ctx, char *fn_name,
   #define ARG_LIMIT 4
 #elif __aarch64__
   #define ARG_LIMIT 8
+#elif __riscv
+  #define ARG_LIMIT 8
 #endif
   if (cb_pre == NULL && cb_post == NULL) return -1;
   if (cb_post && (max_args > ARG_LIMIT || max_args < 0)) return -2;
