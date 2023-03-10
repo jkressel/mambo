@@ -415,6 +415,7 @@ int emit_safe_fcall(mambo_context *ctx, void *function_ptr, int argno) {
   to_push &= ~(((1 << MAX_FCALL_ARGS)-1) >> (MAX_FCALL_ARGS - argno));
 #elif __riscv
   to_push &= ~(((1 << 18)-1) >> (MAX_FCALL_ARGS - argno));
+  to_push |= (1 << lr);
 #endif
 
   emit_push(ctx, to_push);
