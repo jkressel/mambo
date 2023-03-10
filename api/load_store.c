@@ -1456,6 +1456,8 @@ int _riscv_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
   }
 }
 
+#endif
+
 
 int mambo_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
 #ifdef __arm__
