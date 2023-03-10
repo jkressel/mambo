@@ -1862,6 +1862,81 @@ int _arm_get_ld_st_size(mambo_context *ctx) {
 }
 #endif
 
+#ifdef __riscv
+int _riscv_get_ld_st_size(mambo_context *ctx) {
+  int size = -1;
+
+  switch (ctx->code.inst) {
+    case RISCV_SB:
+    case RISCV_LB:
+    case RISCV_LBU: {
+      size = 1;
+      break;
+    }
+
+    case RISCV_SH:
+    case RISCV_LH:
+    case RISCV_LHU: {
+      size = 2;
+      break;
+    }
+
+    case RISCV_AMOSWAP_W:
+    case RISCV_AMOADD_W:
+    case RISCV_AMOXOR_W:
+    case RISCV_AMOAND_W:
+    case RISCV_AMOOR_W:
+    case RISCV_AMOMIN_W:
+    case RISCV_AMOMAX_W:
+    case RISCV_AMOMINU_W:
+    case RISCV_AMOMAXU_W:
+    case RISCV_LWU:
+    case RISCV_FLW:
+    case RISCV_LR_W:
+    case RISCV_LW:
+    case RISCV_FSW:
+    case RISCV_SC_W:
+    case RISCV_C_FLWSP:
+    case RISCV_C_LWSP:
+    case RISCV_C_LW:
+    case RISCV_SW:
+    case RISCV_C_SWSP:
+    case RISCV_C_SW: {
+      size = 4;
+      break;
+    }
+
+    case RISCV_AMOSWAP_D:
+    case RISCV_AMOADD_D:
+    case RISCV_AMOXOR_D:
+    case RISCV_AMOAND_D:
+    case RISCV_AMOOR_D:
+    case RISCV_AMOMIN_D:
+    case RISCV_AMOMAX_D:
+    case RISCV_AMOMINU_D:
+    case RISCV_AMOMAXU_D: 
+    case RISCV_LD:
+    case RISCV_LR_D:
+    case RISCV_FLD:
+    case RISCV_SD:
+    case RISCV_SC_D:
+    case RISCV_FSD: 
+    case RISCV_C_FLD:
+    case RISCV_C_LD:
+    case RISCV_C_FLDSP:
+    case RISCV_C_LDSP:
+    case RISCV_C_FSD:
+    case RISCV_C_SD:
+    case RISCV_C_FSDSP:
+    case RISCV_C_SDSP: {
+      size = 8;
+      break;
+    }
+  }
+  return size;
+}
+#endif
+
 int mambo_get_ld_st_size(mambo_context *ctx) {
 #ifdef __arm__
   if (ctx->code.inst_type == THUMB_INST) {
@@ -1871,6 +1946,8 @@ int mambo_get_ld_st_size(mambo_context *ctx) {
   }
 #elif __aarch64__
   return _a64_get_ld_st_size(ctx);
+#elif __riscv
+  return _riscv_get_ld_st_size(ctx);
 #endif
   return -1;
 }
