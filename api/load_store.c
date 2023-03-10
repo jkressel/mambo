@@ -107,7 +107,6 @@ void _riscv_is_load_or_store(mambo_context *ctx, bool *is_load, bool *is_store) 
     case RISCV_C_SW:
     case RISCV_C_SD:
     case RISCV_C_FSDSP:
-    case RISCV_C_FSWSP:
     case RISCV_C_SWSP:
     case RISCV_C_SDSP:
     case RISCV_SB:
@@ -1051,15 +1050,6 @@ int _riscv_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
       riscv_c_swsp_decode_fields(inst, &rs2, &uimm);
       unsigned int offset = __riscv_c_spword_store_offset(uimm);
       _generate_addr(ctx, reg, sp, reg_invalid, offset);
-      break;
-    }
-    case RISCV_C_FSWSP: {
-      unsigned int rs2;
-	    unsigned int uimm;
-      riscv_c_fswsp_decode_fields(inst, &rs2, &uimm);
-      unsigned int offset = __riscv_c_spword_store_offset(uimm);
-      _generate_addr(ctx, reg, sp, reg_invalid, offset);
-      break;
       break;
     }
     case RISCV_C_LDSP: {
