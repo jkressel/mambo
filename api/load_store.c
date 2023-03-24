@@ -1469,6 +1469,8 @@ int mambo_calc_ld_st_addr(mambo_context *ctx, enum reg reg) {
   return -1;
 #elif __aarch64__
   return _a64_calc_ld_st_addr(ctx, reg);
+#elif __riscv
+  return _riscv_calc_ld_st_addr(ctx, reg);
 #endif
 }
 
