@@ -343,8 +343,6 @@ int instruction_count_pre_inst_handler(mambo_context *ctx) {
     case RISCV_LD:
     case RISCV_LR_D:
     case RISCV_LR_W:
-    case RISCV_LWU:
-    case RISCV_LD:
     case RISCV_FLW:
     case RISCV_FLD:
       inst_counter = &counters->load;
