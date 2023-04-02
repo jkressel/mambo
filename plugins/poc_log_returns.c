@@ -52,13 +52,13 @@ int log_returns_pre_inst(mambo_context *ctx) {
     unsigned int rs1;
     unsigned int imm;
     riscv_jalr_decode_fields(mambo_get_source_addr(ctx), &rd, &rs1, &imm);
-    if (rd == m_x0 && rs1 == m_x1) {
+    if (rd == x0 && rs1 == x1) {
       instrument = true;
     }
   } else if (inst == RISCV_C_JR) {
     unsigned int rs1;
     riscv_c_jalr_decode_fields(mambo_get_source_addr(ctx), &rs1);
-    if (rs1 == m_x1) {
+    if (rs1 == x1) {
       instrument = true;
     }
   }
