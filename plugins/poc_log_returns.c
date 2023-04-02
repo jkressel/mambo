@@ -48,10 +48,10 @@ int log_returns_pre_inst(mambo_context *ctx) {
   }
 #elif __riscv
   if (inst == RISCV_JALR) {
-    unsigned int *rd;
-    unsigned int *rs1;
-    unsigned int *imm;
-    riscv_jalr_decode_fields(mambo_get_source_addr(ctx), rd, rs1, imm);
+    unsigned int rd;
+    unsigned int rs1;
+    unsigned int imm;
+    riscv_jalr_decode_fields(mambo_get_source_addr(ctx), &rd, &rs1, &imm);
     if (rd == x0 && rs1 == lr) {
       instrument = true;
     }
