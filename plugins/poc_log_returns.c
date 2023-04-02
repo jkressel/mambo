@@ -55,7 +55,7 @@ int log_returns_pre_inst(mambo_context *ctx) {
     if (rd == m_x0 && rs1 == m_x1) {
       instrument = true;
     }
-  } else if (inst == RISCV_C_JALR) {
+  } else if (inst == RISCV_C_JR) {
     unsigned int rs1;
     riscv_c_jalr_decode_fields(mambo_get_source_addr(ctx), &rs1);
     if (rs1 == m_x1) {
