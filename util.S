@@ -99,6 +99,7 @@ th_enter:
 #endif
 
 #ifdef __riscv
+th_enter:
   mv sp, a0
   ld  x1, 8(sp)
   ld  x3, 24(sp)
