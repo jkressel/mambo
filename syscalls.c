@@ -50,11 +50,6 @@
 #endif
 
 void *dbm_start_thread_pth(void *ptr) {
-#ifdef __riscv
-  #warning dbm_start_thread_pth() not implemented for RISCV
-  fprintf(stderr, "dbm_start_thread_pth() not implementd for RISCV\n");
-  while(1);
-#else
   dbm_thread *thread_data = (dbm_thread *)ptr;
   assert(thread_data->clone_args->child_stack);
   current_thread = thread_data;
@@ -88,9 +83,22 @@ void *dbm_start_thread_pth(void *ptr) {
   child_stack[33] = child_stack[1]; // X1
   child_stack += 2;
 #endif
+#ifdef __riscv
+  uint64_t *child_stack = thread_data->clone_args->child_stack;
+  child_stack -= 34;
+  mambo_memcpy(child_stack, (void *)thread_data->clone_args, sizeof(uintptr_t) * 32);
+  // move the values for a0 and a1 to the bottom of the stack
+  child_stack[32] = 0; // a0
+  child_stack[33] = child_stack[10]; // a1
+  child_stack += 2;
+#endif
 
   // Release the lock
+#if defined (__arm__) || (__aarch64__)
   asm volatile("DMB SY" ::: "memory");
+#else
+  asm volatile("fence" ::: "memory");
+#endif
   *(thread_data->set_tid) = tid;
 
   assert(register_thread(thread_data, false) == 0);
@@ -99,7 +107,6 @@ void *dbm_start_thread_pth(void *ptr) {
   th_enter(child_stack, addr);
 
   return NULL;
-#endif
 }
 
 dbm_thread *dbm_create_thread(dbm_thread *thread_data, void *next_inst, sys_clone_args *args, volatile pid_t *set_tid) {
