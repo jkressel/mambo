@@ -99,7 +99,7 @@ th_enter:
 #endif
 
 #ifdef __riscv
-  mov sp, a0
+  mv sp, a0
   ld  x1, 8(sp)
   ld  x3, 24(sp)
 //  ld  x4, 32(sp)
