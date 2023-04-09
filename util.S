@@ -101,34 +101,28 @@ th_enter:
 #ifdef __riscv
 th_enter:
   mv sp, a0
-  ld  x1, 8(sp)
-  ld  x3, 24(sp)
-//  ld  x4, 32(sp)
-  ld  x5, 40(sp)
-  ld  x6, 48(sp)
-  ld  x7, 56(sp)
-  ld  x8, 64(sp)
-  ld  x9, 72(sp)
-  ld  x12, 96(sp)
-  ld  x13, 104(sp)
-  ld  x14, 112(sp)
-  ld  x15, 120(sp)
-  ld  x16, 128(sp)
-  ld  x17, 136(sp)
-  ld  x18, 144(sp)
-  ld  x19, 152(sp)
-  ld  x20, 160(sp)
-  ld  x21, 168(sp)
-  ld  x22, 176(sp)
-  ld  x23, 184(sp)
-  ld  x24, 192(sp)
-  ld  x25, 200(sp)
-  ld  x26, 208(sp)
-  ld  x27, 216(sp)
-  ld  x28, 224(sp)
-  ld  x29, 232(sp)
-  ld  x30, 240(sp)
-  ld  x31, 248(sp)
+  ld  a2, 0(sp)
+  ld  a3, 8(sp)
+  ld  a4, 16(sp)
+  ld  a5, 24(sp)
+  ld  a6, 32(sp)
+  ld  a7, 40(sp)
+  ld  t0, 48(sp)
+  ld  t1, 56(sp)
+  ld  t2, 64(sp)
+  ld  t3, 72(sp)
+  ld  t4, 80(sp)
+  ld  t5, 88(sp)
+  ld  t6, 96(sp)
+  ld  s2, 104(sp)
+  ld  s3, 112(sp)
+  ld  s4, 120(sp)
+  ld  tp, 128(sp)
+  ld  gp, 136(sp)
+  ld  ra, 144(sp)
+  ld  s0, 152(sp)
+  ld  s1, 160(sp)
+  addi sp, sp, 240
 
   jr a1
 #endif
@@ -347,6 +341,11 @@ atomic_increment_u32:
   MOV W0, W2
   RET
 
+#elif __riscv
+  #ifdef __riscv_atomic
+    amoadd.w a2, a1, (a0)
+    jr ra
+  #endif
 #endif
 .endfunc
 

@@ -89,7 +89,7 @@ void *dbm_start_thread_pth(void *ptr) {
   mambo_memcpy(child_stack, (void *)thread_data->clone_args, sizeof(uintptr_t) * 32);
   // move the values for a0 and a1 to the bottom of the stack
   child_stack[32] = 0; // a0
-  child_stack[33] = child_stack[10]; // a1
+  child_stack[33] = child_stack[1]; // a1
   child_stack += 2;
 #endif
 
