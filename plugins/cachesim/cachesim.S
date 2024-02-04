@@ -104,4 +104,82 @@ call:
   RET
 #endif
 
+#ifdef __riscv
+cachesim_buf_write:
+addi sp, sp, -16
+sd a3, 0(sp)
+sd a4, 8(sp)
+lw  a3, -8(a2)
+li a4, 16
+mul a4, a3, a4
+add a4, a2, a4
+sd a0, 0(a4)
+sd a1, 8(a4)
+
+
+addi a3, a3, 1
+sw a3, -8(a2)
+addi a3, a3, -BUFLEN
+beq a3, x0, call
+ld a3, 0(sp)
+ld a4, 8(sp)
+add sp, sp, 16
+ret
+
+call:
+addi sp, sp, -16
+sd fp, 0(sp)
+sd ra, 8(sp)
+addi    sp, sp, -(14 * 8)
+  sd     a4,  0 * 8(sp)
+  sd     a5,  1 * 8(sp)
+  sd     a6,  2 * 8(sp)
+  sd     a7,  3 * 8(sp)
+  sd     t0,  4 * 8(sp)
+  sd     t1,  5 * 8(sp)
+  sd     t2,  6 * 8(sp)
+  sd     t3,  7 * 8(sp)
+  sd     t4,  8 * 8(sp)
+  sd     t5, 9 * 8(sp)
+  sd     t6, 10 * 8(sp)
+  sd     s0, 11 * 8(sp)
+  sd     s1, 12 * 8(sp)
+  sd     s2, 13 * 8(sp)
+
+  frcsr s0
+  frflags s1
+  frrm s2
+
+  addi a0, a2, -8
+  la a1, cachesim_proc_buf
+  jalr a1
+
+  fscsr s0
+  fsflags s1
+  fsrm s2
+
+  ld     a4,  0 * 8(sp)
+  ld     a5,  1 * 8(sp)
+  ld     a6,  2 * 8(sp)
+  ld     a7,  3 * 8(sp)
+  ld     t0,  4 * 8(sp)
+  ld     t1,  5 * 8(sp)
+  ld     t2,  6 * 8(sp)
+  ld     t3,  7 * 8(sp)
+  ld     t4,  8 * 8(sp)
+  ld     t5, 9 * 8(sp)
+  ld     t6, 10 * 8(sp)
+  ld     s0, 11 * 8(sp)
+  ld     s1, 12 * 8(sp)
+  ld     s2, 13 * 8(sp)
+  addi    sp, sp, (14 * 8)
+
+  ld fp, 0(sp)
+  ld ra, 8(sp)
+  addi sp, sp, 16
+  ld a3, 0(sp)
+  ld a4, 8(sp)
+  addi sp, sp, 16
+  ret
+#endif
 .endfunc
